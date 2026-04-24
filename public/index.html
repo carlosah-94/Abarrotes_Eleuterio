@@ -253,3 +253,119 @@
         <script src="js/app.js"></script>
 </body>
 </html>
+
+
+   <section id="view-main-app" class="hidden min-h-screen flex w-full">
+        <!-- Sidebar Compartido -->
+        <aside class="h-screen w-64 fixed left-0 top-0 glass-sidebar flex flex-col py-6 border-r border-slate-100/10 shadow-[0_12px_40px_rgba(23,28,31,0.06)] z-30">
+            <div class="px-6 mb-8 mt-2">
+                <div class="flex items-center gap-3 bg-surface-container-low p-2 rounded-xl">
+                    <img class="w-10 h-10 rounded-full object-cover bg-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZB_p9ymjTUA-GfVMF4BOp4jMoF4tzoqmwoyPS3ozws3OcMsRBEkn9cxFAEdMXhs2UxhEZho31zlMf08lVZYO96-DlCz6ZDueY3RaA2lTVce6aQwGgFqn9J5XZuqjvaDDDjZmPy7ALTWZm9yDAJFJ8LmE4-i1JjeJEutcx69SM7kg8JbmmdBI9GNPyBdlsMn_2r19HxYk3cL904VsMQRFjFeLzf4Zd6L8_UbFgtuL2y7YpE33Gz5wVPSsRqqKZluZquGwGRoGcGzJd"/>
+                    <div>
+                        <h2 class="font-headline font-bold text-teal-800 text-sm leading-tight">Don Eleuterio</h2>
+                        <p class="text-[0.6875rem] text-slate-500 font-medium">Administrador</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 space-y-1">
+                <a href="javascript:switchAppView('dashboard')" data-target="dashboard" class="sidebar-link text-teal-900 font-bold border-r-4 border-teal-700 bg-teal-50/30 py-3 px-6 flex items-center gap-3 font-medium text-sm transition-all">
+                    <span class="material-symbols-outlined">dashboard</span> Panel de Control
+                </a>
+                <a href="javascript:switchAppView('inventario')" data-target="inventario" class="sidebar-link text-slate-600 py-3 px-6 flex items-center gap-3 font-medium text-sm hover:bg-teal-50/50 transition-all">
+                    <span class="material-symbols-outlined">inventory_2</span> Inventario
+                </a>
+                <a href="javascript:switchAppView('ventas')" data-target="ventas" class="sidebar-link text-slate-600 py-3 px-6 flex items-center gap-3 font-medium text-sm hover:bg-teal-50/50 transition-all">
+                    <span class="material-symbols-outlined">payments</span> Ventas
+                </a>
+                <a href="javascript:switchAppView('reportes')" data-target="reportes" class="sidebar-link text-slate-600 py-3 px-6 flex items-center gap-3 font-medium text-sm hover:bg-teal-50/50 transition-all">
+                    <span class="material-symbols-outlined">analytics</span> Reportes
+                </a>
+                <a href="javascript:switchAppView('proveedores')" data-target="proveedores" class="sidebar-link text-slate-600 py-3 px-6 flex items-center gap-3 font-medium text-sm hover:bg-teal-50/50 transition-all">
+                    <span class="material-symbols-outlined">local_shipping</span> Proveedores
+                </a>
+            </nav>
+            <div class="px-6 mt-auto space-y-4">
+
+                <div class="pt-4 border-t border-slate-100">
+                    <a href="#" data-action="logout" class="text-slate-600 py-3 flex items-center gap-3 font-medium text-sm hover:text-error transition-colors">
+                        <span class="material-symbols-outlined">logout</span> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area Compartido -->
+        <main class="ml-64 flex-1 flex flex-col min-h-screen relative overflow-hidden bg-background">
+            
+            <!-- TopNavBar Compartido -->
+            <header class="w-full h-16 sticky top-0 z-20 bg-slate-50/80 backdrop-blur-md flex justify-between items-center px-8 border-b border-slate-200/10">
+                <div class="flex items-center gap-8">
+                    <h1 class="text-xl font-extrabold text-teal-900 tracking-tight font-headline">Abarrotes Eleuterio</h1>
+                    <div id="top-search-bar" class="relative hidden md:block">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                        <input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-sm w-72 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Búsqueda rápida..." type="text"/>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="openModal('modal-notifications')" class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors relative">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-tertiary rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+                        <div id="app-dashboard" class="p-8 w-full overflow-y-auto custom-scrollbar">
+                <div class="max-w-6xl mx-auto space-y-8">
+                    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between shadow-[0_12px_40px_rgba(23,28,31,0.06)] relative overflow-hidden group">
+                            <div class="relative z-10">
+                                <span class="text-xs text-slate-500 uppercase tracking-widest font-bold">Resumen de Hoy</span>
+                                <h2 class="text-4xl font-extrabold font-headline text-teal-900 mt-2 mb-6">Ventas del Día</h2>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-2xl font-bold text-primary">S/.</span>
+                                    <span class="text-6xl font-black text-primary tracking-tighter font-headline">1,450.20</span>
+                                </div>
+                            </div>
+                            <div class="mt-12 flex justify-end relative z-10">
+                                <button onclick="switchAppView('reportes')" class="bg-surface-container-low text-on-surface-variant px-6 py-3 rounded-full text-sm font-semibold hover:bg-surface-variant transition-colors flex items-center gap-2">
+                                    Ver Reportes
+                                </button>
+                            </div>
+                            <div class="absolute -right-8 -top-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div>
+                        </div>
+                        <div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between shadow-[0_12px_40px_rgba(23,28,31,0.06)] border-l-8 border-tertiary">
+                            <div>
+                                <span class="text-xs text-tertiary uppercase tracking-widest font-bold">Atención Necesaria</span>
+                                <h2 class="text-3xl font-extrabold text-on-surface mt-2 font-headline">Productos con Bajo Stock</h2>
+                            </div>
+                            <div class="mt-8 flex items-center gap-6">
+                                <div class="bg-tertiary-container/10 p-6 rounded-full">
+                                    <span class="material-symbols-outlined text-5xl text-tertiary" style="font-variation-settings: 'FILL' 1;">inventory</span>
+                                </div>
+                                <div>
+                                    <span class="text-7xl font-black text-on-surface font-headline">12</span>
+                                    <p class="text-slate-500 font-medium">Artículos por reponer</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <button onclick="switchAppView('ventas')" class="md:col-span-2 bg-primary text-on-primary rounded-xl p-10 flex items-center justify-between group hover:opacity-95 transition-all shadow-xl active:scale-[0.98]">
+                            <div class="text-left">
+                                <h3 class="text-3xl font-extrabold mb-2 font-headline">Nueva Venta</h3>
+                                <p class="text-primary-fixed/80 text-lg">Registrar transacciones rápidas</p>
+                            </div>
+                            <div class="bg-on-primary-container/20 p-6 rounded-full group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-5xl">add_shopping_cart</span>
+                            </div>
+                        </button>
+                        <button onclick="openModal('modal-add-product')" class="bg-secondary-container text-on-secondary-container rounded-xl p-8 flex flex-col items-center justify-center gap-4 group hover:bg-secondary transition-all hover:text-white shadow-lg active:scale-[0.98]">
+                            <div class="bg-white/30 p-4 rounded-2xl group-hover:bg-white/20">
+                                <span class="material-symbols-outlined text-4xl">add_box</span>
+                            </div>
+                            <h3 class="text-xl font-bold font-headline">Agregar Producto</h3>
+                        </button>
+                    </section>
+                </div>
+            </div>
