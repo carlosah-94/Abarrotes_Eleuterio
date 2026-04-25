@@ -424,6 +424,125 @@
                 </div>
             </div>
 
+            <!-- ==== REPORTES ==== -->
+            <div id="app-reportes" class="p-8 w-full hidden overflow-y-auto custom-scrollbar">
+                <div class="max-w-7xl mx-auto space-y-8">
+                    <div>
+                        <span class="text-xs font-bold uppercase text-secondary">Finanzas & Reportes</span>
+                        <h2 class="text-4xl font-extrabold text-on-surface font-headline">Resumen General</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-surface-container-lowest p-8 rounded-xl relative overflow-hidden group shadow-sm transition-all">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center text-primary-container"><span class="material-symbols-outlined">trending_up</span></div>
+                                <button class="bg-primary text-white px-5 py-2 rounded-full font-bold text-xs flex gap-2"><span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF</button>
+                            </div>
+                            <h3 class="font-body text-slate-500 mb-2">Total de Ventas</h3>
+                            <span class="font-headline font-extrabold text-5xl text-teal-900 tracking-tight">S/. 42,850.20</span>
+                        </div>
+                        <div class="bg-surface-container-lowest p-8 rounded-xl relative overflow-hidden group shadow-sm transition-all">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-12 h-12 bg-tertiary-container/10 rounded-xl flex items-center justify-center text-tertiary-container"><span class="material-symbols-outlined">payments</span></div>
+                                <button class="bg-tertiary text-white px-5 py-2 rounded-full font-bold text-xs flex gap-2"><span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF</button>
+                            </div>
+                            <h3 class="font-body text-slate-500 mb-2">Gastos de Proveedores</h3>
+                            <span class="font-headline font-extrabold text-5xl text-on-surface tracking-tight">S/. 28,140.65</span>
+                        </div>
+                    </div>
+                    <div class="space-y-6 pt-6">
+                        <h3 class="text-2xl font-bold text-teal-900 font-headline">Listado de Proveedores</h3>
+                        <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+                            <table class="w-full text-left">
+                                <thead class="bg-surface-container-low">
+                                    <tr>
+                                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Proveedor</th>
+                                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Categoría</th>
+                                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Gasto Mensual</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-slate-50">
+                                        <td class="py-4 px-6 font-semibold">Distribuidora Laive</td>
+                                        <td class="py-4 px-6 text-sm">Lácteos & Embutidos</td>
+                                        <td class="py-4 px-6 text-right font-headline font-bold">S/. 8,450.00</td>
+                                    </tr>
+                                    <tr class="border-b border-slate-50">
+                                        <td class="py-4 px-6 font-semibold">Alicorp S.A.A.</td>
+                                        <td class="py-4 px-6 text-sm">Abarrotes Generales</td>
+                                        <td class="py-4 px-6 text-right font-headline font-bold">S/. 12,200.50</td>
+                                    </tr>
+                                    <tr class="border-b border-slate-50">
+                                        <td class="py-4 px-6 font-semibold">Backus & Johnston</td>
+                                        <td class="py-4 px-6 text-sm">Bebidas & Licores</td>
+                                        <td class="py-4 px-6 text-right font-headline font-bold">S/. 5,490.15</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="px-6 py-4 flex items-center justify-between border-t border-slate-100 bg-surface-container-low/50">
+                                <p class="text-sm">Pagina 1 de 3</p>
+                                <div class="flex gap-2">
+                                    <button class="px-3 text-sm border bg-white rounded">Anterior</button>
+                                    <button class="px-3 text-sm border bg-primary text-white rounded">Siguiente</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==== PROVEEDORES ==== -->
+            <div id="app-proveedores" class="p-8 w-full hidden overflow-y-auto custom-scrollbar">
+                <div class="max-w-4xl mx-auto mb-10">
+                    <h3 class="text-3xl font-extrabold text-teal-950 font-headline mb-2">Órdenes de Proveedor</h3>
+                    <p class="text-slate-500 font-body text-sm">Registra la entrada de productos directamente al inventario cuando llegan.</p>
+                </div>
+                <div class="max-w-4xl mx-auto bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+                    <form id="form-proveedores" class="space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre del Proveedor</label>
+                                <input id="provider-name" class="w-full bg-surface border border-slate-200 rounded-lg px-4 py-3 focus:ring-2" placeholder="Ej. Distribuidora Central" type="text" required/>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Fecha de Recepción</label>
+                                <input id="provider-date" class="w-full bg-surface border border-slate-200 rounded-lg px-4 py-3 focus:ring-2" type="date" required/>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-surface-container-low rounded-xl">
+                            <h5 class="text-sm font-bold text-teal-900 mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> Detalle de Productos recibidos</h5>
+                            <div class="grid grid-cols-12 gap-4">
+                                <div class="col-span-6">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Producto</label>
+                                    <input list="proveedores-products" id="provider-product" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none focus:ring-1" placeholder="Ej. Aceite Primor..." />
+                                    <datalist id="proveedores-products"></datalist>
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Cant. Recibida</label>
+                                    <input id="provider-qty" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none" type="number" min="1"/>
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Costo Total (S/.)</label>
+                                    <input id="provider-cost" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none" type="number" step="0.1"/>
+                                </div>
+                            </div>
+                            <button type="button" onclick="addProviderProduct()" class="mt-4 flex items-center gap-2 text-primary font-bold text-xs hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-sm">add_circle</span> AGREGAR OTRO PRODUCTO</button>
+                            <div id="provider-added-products" class="mt-6 space-y-2">
+                                <!-- Items dinamicos -->
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-400 font-semibold uppercase">Costo Total Orden</p>
+                                <p id="provider-total-cost" class="text-2xl font-black text-primary font-headline">S/. 0.00</p>
+                            </div>
+                            <button type="submit" class="bg-primary text-white font-bold px-10 py-3 rounded-full flex items-center gap-3 shadow-lg hover:bg-primary-container transition-colors">
+                                <span class="material-symbols-outlined">save</span> Registrar Orden
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         <!-- AÑADIR PRODUCTO -->
     <div id="modal-add-product" class="modal-overlay hidden fixed inset-0 z-[60] flex items-center justify-center bg-on-background/40 transition-all opacity-100">
         <div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl overflow-hidden pointer-events-auto">
@@ -501,8 +620,36 @@
             </div>
         </div>
     </div>
-        
-            
+
+    <!-- NOTIFICACIONES -->
+    <div id="modal-notifications" class="modal-overlay hidden fixed inset-0 z-50 flex items-start justify-end p-6 md:p-12 pointer-events-none bg-transparent backdrop-blur-none">
+        <div class="w-full max-w-sm bg-surface-container-lowest/95 backdrop-blur-[40px] rounded-[1.5rem] shadow-2xl pointer-events-auto overflow-hidden border border-slate-200">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-outline-variant/10">
+                <h2 class="font-headline font-bold text-lg text-primary">Notificaciones</h2>
+                <button type="button" onclick="closeModal('modal-notifications')" class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined text-outline">close</span></button>
+            </div>
+            <div class="py-2">
+                <div class="px-6 py-4 hover:bg-surface-container-low flex gap-4 cursor-pointer">
+                    <div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">warning</span>
+                    </div>
+                    <div>
+                        <span class="font-body font-semibold text-sm block">Bajo stock: Leche (2 pzas)</span>
+                        <span class="text-xs text-on-surface-variant">Hace 15 minutos</span>
+                    </div>
+                </div>
+                <div class="px-6 py-4 hover:bg-surface-container-low flex gap-4 cursor-pointer">
+                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+                    </div>
+                    <div>
+                        <span class="font-body font-semibold text-sm block">Venta registrada: S/. 45.00</span>
+                        <span class="text-xs text-on-surface-variant">Hace 45 minutos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
 <script src="js/app.js"></script>
 </body>
