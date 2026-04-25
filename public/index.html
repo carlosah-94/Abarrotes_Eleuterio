@@ -366,6 +366,143 @@
                         </section>
                 </div>
             </div>
+
+            <!-- ==== INVENTARIO ==== -->
+            <div id="app-inventario" class="p-8 w-full hidden overflow-y-auto custom-scrollbar">
+                <div class="max-w-7xl mx-auto">
+                    <div class="flex items-end justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Inventario de Productos</h2>
+                            <p class="text-on-surface-variant mt-1 text-sm">Control de stock y precios en tiempo real.</p>
+                        </div>
+                        <button onclick="openModal('modal-add-product')" class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-primary-container transition-all shadow-lg shadow-primary/10">
+                            <span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                            Añadir Nuevo Producto
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary">
+                            <span class="text-xs font-bold text-on-surface-variant uppercase">Total Productos</span>
+                            <div class="mt-2"><span class="text-3xl font-extrabold text-primary font-headline">1,248</span></div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-secondary">
+                            <span class="text-xs font-bold text-on-surface-variant uppercase">Valor Inventario</span>
+                            <div class="mt-2"><span class="text-3xl font-extrabold text-secondary font-headline">S/. 12,450</span></div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-tertiary">
+                            <span class="text-xs font-bold text-on-surface-variant uppercase">Stock Crítico</span>
+                            <div class="mt-2 text-tertiary"><span class="text-3xl font-extrabold font-headline">8</span> Requiere acción</div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary-container">
+                            <span class="text-xs font-bold text-on-surface-variant uppercase">Categorías</span>
+                            <div class="mt-2"><span class="text-3xl font-extrabold text-primary-container font-headline">24</span></div>
+                        </div>
+                    </div>
+                    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-left" id="inventory-table">
+                            <thead class="bg-surface-container-low/50">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase font-headline">Producto</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase font-headline">Categoría</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase font-headline">Stock</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase font-headline text-right">Precio (S/.)</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase font-headline text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-container text-sm">
+                                <!-- DINAMICO -->
+                            </tbody>
+                        </table>
+                        <div id="inventory-pagination" class="px-6 py-4 flex items-center justify-between border-t border-slate-100 bg-surface-container-low/50">
+                            <p class="text-sm font-medium text-slate-500" id="pagination-info">Pagina 1 de 1</p>
+                            <div class="flex gap-2">
+                                <button id="btn-prev-page" class="px-3 py-1 text-sm border border-slate-200 bg-white rounded text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-colors">Anterior</button>
+                                <button id="btn-next-page" class="px-3 py-1 text-sm border border-transparent bg-primary text-white rounded hover:bg-primary-container disabled:opacity-50 transition-colors">Siguiente</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- AÑADIR PRODUCTO -->
+    <div id="modal-add-product" class="modal-overlay hidden fixed inset-0 z-[60] flex items-center justify-center bg-on-background/40 transition-all opacity-100">
+        <div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl overflow-hidden pointer-events-auto">
+            <div class="p-6 bg-primary-container text-white flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold font-headline">Añadir Nuevo Producto</h2>
+                </div>
+                <button type="button" onclick="closeModal('modal-add-product')" class="text-white/80 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="form-add-product" class="p-8 space-y-6">
+                <div>
+                    <label class="block text-xs font-bold text-outline uppercase mb-2">Nombre del Producto</label>
+                    <input class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3" placeholder="Ej: Arroz Costeño 5Kg" type="text" required/>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-outline uppercase mb-2">Precio (S/.)</label>
+                        <input class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3" placeholder="0.00" type="number" step="0.1" required/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-outline uppercase mb-2">Stock Inicial</label>
+                        <input class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3" placeholder="0" type="number" required/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline uppercase mb-2">Categoría</label>
+                    <select class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3">
+                        <option value="abarrotes">Abarrotes</option>
+                        <option value="lacteos">Lácteos y Huevos</option>
+                    </select>
+                </div>
+                <div class="pt-4 flex gap-4">
+                    <button type="button" onclick="closeModal('modal-add-product')" class="flex-1 px-6 py-3 rounded-full font-bold bg-surface-container-low text-on-surface-variant hover:bg-surface-variant transition-colors">Cancelar</button>
+                    <button type="submit" class="flex-1 px-6 py-3 rounded-full font-bold bg-primary text-white hover:bg-primary-container transition-colors shadow-lg">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDITAR PRODUCTO -->
+    <div id="modal-edit-product" class="modal-overlay hidden fixed inset-0 z-[60] flex items-center justify-center p-6 bg-on-background/40">
+        <div class="glass-panel w-full max-w-md rounded-[1.5rem] shadow-2xl overflow-hidden border border-white/40 pointer-events-auto bg-white/90">
+            <div class="px-8 py-6 flex justify-between items-center border-b border-slate-200/20">
+                <h3 class="text-xl font-headline font-extrabold text-teal-900">Editar Producto</h3>
+                <button type="button" onclick="closeModal('modal-edit-product')" class="w-8 h-8 rounded-full bg-slate-200/50 flex flex-center items-center justify-center hover:bg-slate-300 transition-colors"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="px-8 py-8 space-y-6">
+                <div class="flex gap-4 items-start">
+                    <img class="w-20 h-20 rounded-xl object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U"/>
+                    <div class="flex-1 space-y-1">
+                        <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Nombre</label>
+                        <input class="w-full bg-white border border-slate-100 rounded-lg px-4 py-2 text-sm" type="text" value="Aceite Primor 1L"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Categoría</label>
+                        <select class="w-full bg-white border border-slate-100 rounded-lg px-4 py-2 text-sm"><option selected>Abarrotes</option></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Stock Actual</label>
+                        <input class="w-full bg-white border border-slate-100 rounded-lg px-4 py-2 text-sm font-bold text-primary" type="number" value="5"/>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Precio (S/.)</label>
+                    <input class="w-full bg-white border border-slate-100 rounded-lg px-4 py-3 text-lg font-bold" type="text" value="11.20"/>
+                </div>
+            </div>
+            <div class="px-8 py-6 bg-slate-50/50 flex flex-row-reverse gap-3">
+                <form id="form-edit-product" class="flex-1 m-0">
+                    <button type="submit" class="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:bg-primary-container transition-colors">Guardar Cambios</button>
+                </form>
+                <button type="button" onclick="closeModal('modal-edit-product')" class="px-6 py-3 rounded-full font-bold text-sm text-slate-600 hover:bg-slate-200 transition-colors">Cancelar</button>
+            </div>
+        </div>
+    </div>
+        
+            
     
 <script src="js/app.js"></script>
 </body>
