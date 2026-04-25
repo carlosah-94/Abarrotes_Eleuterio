@@ -424,6 +424,80 @@
                 </div>
             </div>
 
+            <!-- ==== VENTAS ==== -->
+            <div id="app-ventas" class="p-8 w-full hidden flex flex-row gap-8 pb-12 overflow-hidden" style="height: calc(100vh - 64px);">
+                <section class="flex-1 overflow-y-auto custom-scrollbar pr-4">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-headline font-extrabold text-teal-900">Productos Frecuentes</h2>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8" id="frequent-products-grid">
+                        <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54" class="h-24 w-full object-cover rounded-md mb-2">
+                            <p class="font-bold text-sm">Leche Entera 1L</p>
+                            <p class="text-primary font-bold">S/. 4.50</p>
+                            <button class="mt-2 w-full py-1 text-sm bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white">Agregar</button>
+                        </div>
+                        <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL" class="h-24 w-full object-cover rounded-md mb-2">
+                            <p class="font-bold text-sm">Pan Molde</p>
+                            <p class="text-primary font-bold">S/. 7.20</p>
+                            <button class="mt-2 w-full py-1 text-sm bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white">Agregar</button>
+                        </div>
+                        <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh" class="h-24 w-full object-cover rounded-md mb-2">
+                            <p class="font-bold text-sm">Arroz Extra 1kg</p>
+                            <p class="text-primary font-bold">S/. 4.20</p>
+                            <button class="mt-2 w-full py-1 text-sm bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white">Agregar</button>
+                        </div>
+                        <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center">
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1mh0Jx1RSSNoJX9cfmnxHdhJ5uuyS-SUH3G-1UTH397BNLUEXm8fv1lwLOBOGhzwlNePQoEmitg7KzSvNU32xu0pSA3J1utH_08B387W1zKcRrnNv7jJpIx7o0XQWKNtVHrXOlBwWZC9XI9E0Ho7D152uBg1qEcKXeXmYp4sBPjLa8Wij0_JKcvxIsn4WHOUk5CvgI6DqgeSK0kMR5Mbs4AkISLLl4cgCiL2mXi_gUYKSxSgwDreIfjtuBfx5DNCRdN9LpxkICK1B" class="h-24 w-full object-cover rounded-md mb-2">
+                            <p class="font-bold text-sm">Huevos x12</p>
+                            <p class="text-primary font-bold">S/. 8.50</p>
+                            <button class="mt-2 w-full py-1 text-sm bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white">Agregar</button>
+                        </div>
+                    </div>
+                </section>
+                <aside class="w-[400px] h-full bg-surface-container-lowest rounded-3xl p-6 flex flex-col shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-headline font-extrabold text-teal-900">Venta Actual</h3>
+                    </div>
+                    <div id="cart-items" class="flex-1 space-y-4 overflow-y-auto custom-scrollbar border-b border-slate-100 pb-4">
+                        <div class="flex justify-between items-center bg-surface-container-low p-2 rounded-lg">
+                            <div>
+                                <p class="text-sm font-bold">Leche Entera 1L</p>
+                                <p class="text-xs text-slate-500">S/. 4.50</p>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm">
+                                <button class="btn-qty-minus w-5 h-5 flex text-primary-container"><span class="material-symbols-outlined text-xs">remove</span></button>
+                                <span class="text-xs font-bold w-3 text-center qty-value">2</span>
+                                <button class="btn-qty-add w-5 h-5 flex text-primary-container"><span class="material-symbols-outlined text-xs">add</span></button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center bg-surface-container-low p-2 rounded-lg">
+                            <div>
+                                <p class="text-sm font-bold">Arroz Extra 1kg</p>
+                                <p class="text-xs text-slate-500">S/. 4.20</p>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm">
+                                <button class="btn-qty-minus w-5 h-5 flex text-primary-container"><span class="material-symbols-outlined text-xs">remove</span></button>
+                                <span class="text-xs font-bold w-3 text-center qty-value">1</span>
+                                <button class="btn-qty-add w-5 h-5 flex text-primary-container"><span class="material-symbols-outlined text-xs">add</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4 space-y-4">
+                        <div class="flex justify-between font-bold text-lg">
+                            <span>Total a Pagar</span>
+                            <span id="cart-total" class="text-primary font-headline">S/. 13.20</span>
+                        </div>
+                        <form id="form-sale">
+                            <button type="submit" class="w-full py-4 bg-primary text-white rounded-full font-bold flex items-center justify-center gap-2">Finalizar Venta <span class="material-symbols-outlined">check_circle</span></button>
+                        </form>
+                        <button class="w-full py-2 border border-slate-200 text-slate-600 rounded-full font-bold text-sm flex items-center justify-center gap-2">Descargar Comprobante <span class="material-symbols-outlined text-sm">download</span></button>
+                    </div>
+                </aside>
+            </div>
+
             <!-- ==== REPORTES ==== -->
             <div id="app-reportes" class="p-8 w-full hidden overflow-y-auto custom-scrollbar">
                 <div class="max-w-7xl mx-auto space-y-8">

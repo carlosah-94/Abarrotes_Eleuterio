@@ -43,6 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFrequentProducts();
         updateProviderDatalist();
     }
+    function getCart() {
+        return JSON.parse(localStorage.getItem('cart')) || [];
+    }
+    function saveCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+    }
+
 
 
     // Funciones de navegación principal
@@ -278,5 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderInventory();
-
+    renderFrequentProducts();
+    renderCart();
 });
