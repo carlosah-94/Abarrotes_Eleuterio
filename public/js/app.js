@@ -125,6 +125,132 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+       // === INVENTARIO Y PAGINACION ===
+    let currentPage = 1;
+    const itemsPerPage = 5;
+
+    window.renderInventory = function() {
+        const tableBody = document.querySelector('#inventory-table tbody');
+        if (!tableBody) return;
+        
+        const allProducts = getProducts();
+        const totalPages = Math.ceil(allProducts.length / itemsPerPage) || 1;
+        
+        // Asegurar que no se exceda el limite al borrar elementos finales
+        if(currentPage > totalPages) currentPage = totalPages;
+        if(currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const productsToRender = allProducts.slice(startIndex, endIndex);
+
+        tableBody.innerHTML = '';
+        
+        productsToRender.forEach(p => {
+            const stockClass = p.stock < 10 ? 'text-error' : '';
+            const catColor = p.category === 'Lácteos' ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
+            
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-surface-container-low transition-colors';
+            tr.innerHTML = `
+                <td class="px-6 py-4 font-semibold text-on-surface">${p.name}</td>
+                <td class="px-6 py-4"><span class="px-3 py-1 ${catColor} rounded-full text-xs font-semibold">${p.category}</span></td>
+                <td class="px-6 py-4 font-bold ${stockClass}">${p.stock}</td>
+                <td class="px-6 py-4 text-right font-headline font-bold">${parseFloat(p.price).toFixed(2)}</td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="editProduct(${p.id})" class="text-slate-400 hover:text-primary transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+                    <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-tertiary transition-all p-1 ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        // Actualizar UI paginación
+        const txtInfo = document.getElementById('pagination-info');
+        const btnPrev = document.getElementById('btn-prev-page');
+        const btnNext = document.getElementById('btn-next-page');
+
+        if(txtInfo) txtInfo.innerText = `Página ${currentPage} de ${totalPages}`;
+        if(btnPrev) {
+            btnPrev.disabled = (currentPage === 1);
+            btnPrev.onclick = () => { if(currentPage > 1) { currentPage--; renderInventory(); } };
+        }
+        if(btnNext) {
+            btnNext.disabled = (currentPage === totalPages);
+            btnNext.onclick = () => { if(currentPage < totalPages) { currentPage++; renderInventory(); } };
+        }
+    };
+
+    // Eliminar producto
+    window.deleteProduct = function(id) {
+        if(confirm('¿Seguro que deseas eliminar este producto?')) {
+            const products = getProducts().filter(p => p.id !== id);
+            saveProducts(products);
+            
+            // También eliminarlo del carrito si estuviera
+            const cart = getCart().filter(c => c.id !== id);
+            saveCart(cart);
+        }
+    };
+
+    // Editar producto
+    let editingId = null;
+    window.editProduct = function(id) {
+        const product = getProducts().find(p => p.id === id);
+        if(!product) return;
+        editingId = id;
+        
+        const form = document.getElementById('form-edit-product');
+        const inputs = form.closest('.glass-panel').querySelectorAll('input, select');
+        
+        inputs[0].value = product.name;         // Nombre
+        inputs[1].value = product.category;     // Categoria
+        inputs[2].value = product.stock;        // Stock
+        inputs[3].value = product.price;        // Precio
+        
+        openModal('modal-edit-product');
+    };
+
+    // Guardar Edición
+    document.getElementById('form-edit-product').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputs = e.target.closest('.glass-panel').querySelectorAll('input, select');
+        const products = getProducts();
+        const idx = products.findIndex(p => p.id === editingId);
+        
+        if(idx !== -1) {
+            products[idx].name = inputs[0].value;
+            products[idx].category = inputs[1].value;
+            products[idx].stock = parseInt(inputs[2].value, 10);
+            products[idx].price = parseFloat(inputs[3].value);
+            saveProducts(products);
+        }
+        closeModal('modal-edit-product');
+    });
+
+    // Agregar Producto Nuevo
+    document.getElementById('form-add-product').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputs = e.target.querySelectorAll('input, select');
+        const products = getProducts();
+        
+        const newProduct = {
+            id: Date.now(),
+            name: inputs[0].value,
+            price: parseFloat(inputs[1].value),
+            stock: parseInt(inputs[2].value, 10),
+            category: inputs[3].options[inputs[3].selectedIndex].text,
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54'
+        };
+        
+        products.push(newProduct);
+        saveProducts(products); // Renderiza autom.
+        
+        e.target.reset();
+        closeModal('modal-add-product');
+    });
+ 
+
     // Validar Formularios - Simular navegación (para forms que no atrapamos antes)
     document.querySelectorAll('form').forEach(form => {
         if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
@@ -150,4 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
               navigateTo('login');
          });
     });
+
+    renderInventory();
+
 });
