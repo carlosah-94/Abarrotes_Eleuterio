@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'proveedores': document.getElementById('app-proveedores')
     };
 
-    // Initialize LocalStorage Data
+    // Inicializar los datos de LocalStorage
     function initData() {
         if (!localStorage.getItem('products')) {
             const initialProducts = [
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initData();
 
-    // Data Access
+    // Acceso a datos
     function getProducts() {
         return JSON.parse(localStorage.getItem('products')) || [];
     }
@@ -50,8 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('cart', JSON.stringify(cart));
         renderCart();
     }
-
-
 
     // Funciones de navegación principal
     window.navigateTo = function(viewName) {
@@ -133,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-       // === INVENTARIO Y PAGINACION ===
+    // === INVENTARIO Y PAGINACION ===
     let currentPage = 1;
     const itemsPerPage = 5;
 
@@ -257,9 +255,242 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.reset();
         closeModal('modal-add-product');
     });
- 
 
-    // Validar Formularios - Simular navegación (para forms que no atrapamos antes)
+    // === LÓGICA DE VENTAS ===
+    window.renderFrequentProducts = function() {
+        const grid = document.getElementById('frequent-products-grid');
+        if (!grid) return;
+        
+        const products = getProducts().slice(0, 8); // Máximo 8 productos
+        grid.innerHTML = '';
+        
+        products.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center flex flex-col justify-between';
+            div.innerHTML = `
+                <div>
+                    <img src="${p.img}" class="h-24 w-full object-cover rounded-md mb-2 bg-surface-container-low">
+                    <p class="font-bold text-sm leading-tight mb-1">${p.name}</p>
+                    <p class="text-primary font-bold mb-2">S/. ${parseFloat(p.price).toFixed(2)}</p>
+                </div>
+                <button onclick="addToCart(${p.id})" class="mt-auto w-full py-2 text-xs bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">Agregar</button>
+            `;
+            grid.appendChild(div);
+        });
+    };
+
+    window.addToCart = function(id) {
+        const products = getProducts();
+        const product = products.find(p => p.id === id);
+        if(!product) return;
+        
+        const cart = getCart();
+        const existing = cart.find(c => c.id === id);
+        
+        if (existing) {
+            if(existing.qty < product.stock) {
+                existing.qty++;
+            } else {
+                alert('Stock insuficiente para este producto');
+            }
+        } else {
+            if(product.stock > 0) {
+                cart.push({ ...product, qty: 1 });
+            } else {
+                alert('Producto fuera de stock');
+                return;
+            }
+        }
+        
+        saveCart(cart);
+    };
+
+    window.updateCartQty = function(id, delta) {
+        let cart = getCart();
+        const item = cart.find(c => c.id === id);
+        const products = getProducts();
+        const product = products.find(p => p.id === id);
+        
+        if(item) {
+            const newQty = item.qty + delta;
+            if(newQty > 0 && newQty <= product.stock) {
+                 item.qty = newQty;
+            } else if (newQty <= 0) {
+                 cart = cart.filter(c => c.id !== id);
+
+            }
+        }
+        saveCart(cart);
+    };
+
+    window.renderCart = function() {
+        const cartContainer = document.getElementById('cart-items');
+        const cartTotalSpan = document.getElementById('cart-total');
+        if (!cartContainer || !cartTotalSpan) return;
+        
+        const cart = getCart();
+        cartContainer.innerHTML = '';
+        
+        let total = 0;
+        cart.forEach(item => {
+            total += (item.price * item.qty);
+            
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center bg-surface-container-low p-2 rounded-lg';
+            div.innerHTML = `
+                <div>
+                    <p class="text-sm font-bold truncate max-w-[150px]">${item.name}</p>
+                    <p class="text-xs text-slate-500">S/. ${parseFloat(item.price).toFixed(2)}</p>
+                </div>
+                <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm shrink-0">
+                    <button type="button" onclick="updateCartQty(${item.id}, -1)" class="w-5 h-5 flex text-primary hover:bg-surface-container rounded-full items-center justify-center transition-colors"><span class="material-symbols-outlined text-[14px]">remove</span></button>
+                    <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
+                    <button type="button" onclick="updateCartQty(${item.id}, 1)" class="w-5 h-5 flex text-primary hover:bg-surface-container rounded-full items-center justify-center transition-colors"><span class="material-symbols-outlined text-[14px]">add</span></button>
+                </div>
+            `;
+            cartContainer.appendChild(div);
+        });
+        
+        if(cart.length === 0) {
+             cartContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No hay productos en la venta actual.</p>';
+             total = 0;
+        }
+        
+        cartTotalSpan.innerText = `S/. ${total.toFixed(2)}`;
+    };
+
+    // Finalizar Venta
+    document.getElementById('form-sale').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cart = getCart();
+        if(cart.length === 0) {
+             alert('El carrito está vacío');
+             return;
+        }
+        
+        // Reducir stock del inventario
+        const products = getProducts();
+        
+        cart.forEach(cartItem => {
+             const prodIdx = products.findIndex(p => p.id === cartItem.id);
+             if(prodIdx !== -1) {
+                  products[prodIdx].stock -= cartItem.qty;
+             }
+        });
+        
+        saveProducts(products); // Guarda inventario actualizado
+        saveCart([]); // Limpia el carrito
+        
+        alert('Venta finalizada exitosamente.\nSe ha descontado del inventario.');
+    });
+ 
+    // === LÓGICA DE PROVEEDORES ===
+    let currentProviderOrder = [];
+
+    window.updateProviderDatalist = function() {
+        const datalist = document.getElementById('proveedores-products');
+        if(!datalist) return;
+        datalist.innerHTML = '';
+        getProducts().forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.name;
+            datalist.appendChild(opt);
+        });
+    };
+
+    window.renderProviderOrder = function() {
+        const container = document.getElementById('provider-added-products');
+        const costSpan = document.getElementById('provider-total-cost');
+        if(!container || !costSpan) return;
+
+        container.innerHTML = '';
+        let total = 0;
+
+        currentProviderOrder.forEach((item, index) => {
+            total += item.cost;
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center bg-white border border-slate-100 p-3 rounded-lg text-sm';
+            div.innerHTML = `
+                <div class="flex-1">
+                    <span class="font-bold text-on-surface">${item.name}</span>
+                    <span class="text-xs text-slate-500 block">Cant: ${item.qty}</span>
+                </div>
+                <div class="font-headline font-bold text-primary mr-4">S/. ${parseFloat(item.cost).toFixed(2)}</div>
+                <button type="button" onclick="removeProviderProduct(${index})" class="text-error hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+            `;
+            container.appendChild(div);
+        });
+
+        costSpan.innerText = `S/. ${total.toFixed(2)}`;
+    };
+
+    window.addProviderProduct = function() {
+        const inputName = document.getElementById('provider-product');
+        const inputQty = document.getElementById('provider-qty');
+        const inputCost = document.getElementById('provider-cost');
+
+        const name = inputName.value.trim();
+        const qty = parseInt(inputQty.value, 10);
+        const cost = parseFloat(inputCost.value);
+
+        if(!name || isNaN(qty) || qty <= 0 || isNaN(cost) || cost <= 0) {
+            alert('Por favor completa todos los campos del producto correctamente.');
+            return;
+        }
+
+        currentProviderOrder.push({ name, qty, cost });
+        renderProviderOrder();
+
+        // Limpiar inputs del producto
+        inputName.value = '';
+        inputQty.value = '';
+        inputCost.value = '';
+    };
+
+    window.removeProviderProduct = function(index) {
+        currentProviderOrder.splice(index, 1);
+        renderProviderOrder();
+    };
+
+    document.getElementById('form-proveedores').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if(currentProviderOrder.length === 0) {
+            alert('Añade al menos un producto a la orden detallada abajo.');
+            return;
+        }
+
+        const products = getProducts();
+        
+        // Sumar stock si el producto existe
+        currentProviderOrder.forEach(orderItem => {
+            const existing = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
+            if(existing) {
+                existing.stock += orderItem.qty;
+            } else {
+                // Producto nuevo, lo agregamos al inventario por defecto
+                products.push({
+                    id: Date.now() + Math.random(),
+                    name: orderItem.name,
+                    price: 0, // Precio de venta 0 por defecto si no lo tenian registrado
+                    stock: orderItem.qty,
+                    category: 'Abarrotes',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U'
+                });
+            }
+        });
+
+        saveProducts(products); // Actualiza localStorage
+
+        alert('Orden Registrada Exitosamente en el inventario.');
+        
+        // Limpiamos todo
+        currentProviderOrder = [];
+        renderProviderOrder();
+        e.target.reset(); // Botón form reset
+    });
+
+
+    // Validar Formularios - Simular navegación
     document.querySelectorAll('form').forEach(form => {
         if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
         
@@ -285,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
          });
     });
 
+    // Inicializar renders on load
     renderInventory();
     renderFrequentProducts();
     renderCart();

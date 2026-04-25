@@ -250,7 +250,7 @@
         </main>
     </section>
 
-    <!-- ==================== VISTA PRINCIPAL (APP SHELL) ==================== -->
+    <!-- ==================== VISTA PRINCIPAL ==================== -->
     <section id="view-main-app" class="hidden min-h-screen flex w-full">
         <!-- Sidebar Compartido -->
         <aside class="h-screen w-64 fixed left-0 top-0 glass-sidebar flex flex-col py-6 border-r border-slate-100/10 shadow-[0_12px_40px_rgba(23,28,31,0.06)] z-30">
@@ -310,6 +310,8 @@
                     </button>
                 </div>
             </header>
+
+            <!-- CONTENIDO DINAMICO -->
 
             <!-- ==== DASHBOARD ==== -->
             <div id="app-dashboard" class="p-8 w-full overflow-y-auto custom-scrollbar">
@@ -617,7 +619,12 @@
                 </div>
             </div>
 
-        <!-- AÑADIR PRODUCTO -->
+        </main>
+    </section>
+
+    <!-- ==================== MODALES GLOBALES ==================== -->
+
+    <!-- AÑADIR PRODUCTO -->
     <div id="modal-add-product" class="modal-overlay hidden fixed inset-0 z-[60] flex items-center justify-center bg-on-background/40 transition-all opacity-100">
         <div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl overflow-hidden pointer-events-auto">
             <div class="p-6 bg-primary-container text-white flex justify-between items-center">
@@ -725,6 +732,6 @@
         </div>
     </div>
     
-<script src="js/app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
