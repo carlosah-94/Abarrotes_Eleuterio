@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'reportes': document.getElementById('app-reportes'),
         'proveedores': document.getElementById('app-proveedores')
     };
-   // Funciones de navegación principal
+
+    // Funciones de navegación principal
     window.navigateTo = function(viewName) {
         sectionLogin.classList.add('hidden');
         sectionRegister.classList.add('hidden');
@@ -79,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-        // Control de Modales
+    // Control de Modales
     window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.remove('hidden');
@@ -92,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-        document.querySelectorAll('form').forEach(form => {
+    // Validar Formularios - Simular navegación (para forms que no atrapamos antes)
+    document.querySelectorAll('form').forEach(form => {
         if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
         
         form.addEventListener('submit', (e) => {
