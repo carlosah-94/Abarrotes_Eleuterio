@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // === INVENTARIO Y PAGINACION ===
-   let currentPage = 1;
+    let currentPage = 1;
     const itemsPerPage = 5;
     let currentSearchTerm = '';
 
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tableBody.appendChild(tr);
         });
-        
+
         // Actualizar UI paginación
         const txtInfo = document.getElementById('pagination-info');
         const btnPrev = document.getElementById('btn-prev-page');
@@ -239,13 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!product) return;
         editingId = id;
         
-        const form = document.getElementById('form-edit-product');
-        const inputs = form.closest('.glass-panel').querySelectorAll('input, select');
-        
-        inputs[0].value = product.name;         // Nombre
-        inputs[1].value = product.category;     // Categoria
-        inputs[2].value = product.stock;        // Stock
-        inputs[3].value = product.price;        // Precio
+        document.getElementById('edit-product-name').value = product.name || '';
+        document.getElementById('edit-product-size').value = product.presentation || '';
+        const typeInput = document.getElementById('edit-product-type');
+        if(typeInput) typeInput.value = product.type || '';
+        document.getElementById('edit-product-price').value = product.price || 0;
+        document.getElementById('edit-product-date').value = product.dueDate || '';
         
         openModal('modal-edit-product');
     };
@@ -253,15 +252,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Guardar Edición
     document.getElementById('form-edit-product').addEventListener('submit', (e) => {
         e.preventDefault();
-        const inputs = e.target.closest('.glass-panel').querySelectorAll('input, select');
         const products = getProducts();
         const idx = products.findIndex(p => p.id === editingId);
         
         if(idx !== -1) {
-            products[idx].name = inputs[0].value;
-            products[idx].category = inputs[1].value;
-            products[idx].stock = parseInt(inputs[2].value, 10);
-            products[idx].price = parseFloat(inputs[3].value);
+            products[idx].name = document.getElementById('edit-product-name').value;
+            products[idx].presentation = document.getElementById('edit-product-size').value;
+            const typeInput = document.getElementById('edit-product-type');
+            products[idx].type = typeInput ? typeInput.value : '';
+            products[idx].price = parseFloat(document.getElementById('edit-product-price').value);
+            products[idx].dueDate = document.getElementById('edit-product-date').value;
             saveProducts(products);
         }
         closeModal('modal-edit-product');
@@ -270,15 +270,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Agregar Producto Nuevo
     document.getElementById('form-add-product').addEventListener('submit', (e) => {
         e.preventDefault();
-        const inputs = e.target.querySelectorAll('input, select');
         const products = getProducts();
+        const categorySelect = document.getElementById('add-product-category');
         
         const newProduct = {
             id: Date.now(),
-            name: inputs[0].value,
-            price: parseFloat(inputs[1].value),
-            stock: parseInt(inputs[2].value, 10),
-            category: inputs[3].options[inputs[3].selectedIndex].text,
+            name: document.getElementById('add-product-name').value,
+            presentation: document.getElementById('add-product-size').value,
+            type: document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '',
+            price: parseFloat(document.getElementById('add-product-price').value),
+            stock: parseInt(document.getElementById('add-product-stock').value, 10),
+            dueDate: document.getElementById('add-product-date').value,
+            category: categorySelect.options[categorySelect.selectedIndex].text,
             img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54'
         };
         
