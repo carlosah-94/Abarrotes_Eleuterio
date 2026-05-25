@@ -132,14 +132,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // === INVENTARIO Y PAGINACION ===
-    let currentPage = 1;
+   let currentPage = 1;
     const itemsPerPage = 5;
+    let currentSearchTerm = '';
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value.toLowerCase();
+            currentPage = 1;
+            renderInventory();
+            renderFrequentProducts();
+        });
+    }
 
     window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
         
-        const allProducts = getProducts();
+        let allProducts = getProducts();
+        if (currentSearchTerm) {
+            allProducts = allProducts.filter(p => 
+                (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
+                (p.type && p.type.toLowerCase().includes(currentSearchTerm)) ||
+                (p.category && p.category.toLowerCase().includes(currentSearchTerm))
+            );
+        }
+        
         const totalPages = Math.ceil(allProducts.length / itemsPerPage) || 1;
         
         // Asegurar que no se exceda el limite al borrar elementos finales
@@ -156,13 +175,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const stockClass = p.stock < 10 ? 'text-error' : '';
             const catColor = p.category === 'Lácteos' ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
             
+            // Lógica de fecha vencimiento
+            let dateClass = 'text-on-surface';
+            let dateStr = 'N/A';
+            if (p.dueDate) {
+                dateStr = p.dueDate;
+                const today = new Date();
+                const due = new Date(p.dueDate);
+                const diffTime = due - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 0) dateClass = 'text-error font-bold';
+                else if (diffDays <= 30) dateClass = 'text-orange-600 font-bold';
+            }
+
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-surface-container-low transition-colors';
             tr.innerHTML = `
-                <td class="px-6 py-4 font-semibold text-on-surface">${p.name}</td>
-                <td class="px-6 py-4"><span class="px-3 py-1 ${catColor} rounded-full text-xs font-semibold">${p.category}</span></td>
-                <td class="px-6 py-4 font-bold ${stockClass}">${p.stock}</td>
-                <td class="px-6 py-4 text-right font-headline font-bold">${parseFloat(p.price).toFixed(2)}</td>
+                <td class="px-6 py-4 font-semibold text-on-surface">${p.name} ${p.presentation || ''}</td>
+                <td class="px-6 py-4 text-center"><span class="px-3 py-1 ${catColor} rounded-full text-xs font-semibold">${p.category}</span></td>
+                <td class="px-6 py-4 font-bold text-center ${stockClass}">${p.stock}</td>
+                <td class="px-6 py-4 font-semibold text-center ${dateClass}">${dateStr}</td>
+                <td class="px-6 py-4 text-center font-headline font-bold">${parseFloat(p.price).toFixed(2)}</td>
                 <td class="px-6 py-4 text-center">
                     <button onclick="editProduct(${p.id})" class="text-slate-400 hover:text-primary transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
                     <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-tertiary transition-all p-1 ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>
@@ -170,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tableBody.appendChild(tr);
         });
-
+        
         // Actualizar UI paginación
         const txtInfo = document.getElementById('pagination-info');
         const btnPrev = document.getElementById('btn-prev-page');
