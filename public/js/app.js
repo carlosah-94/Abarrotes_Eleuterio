@@ -297,19 +297,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = document.getElementById('frequent-products-grid');
         if (!grid) return;
         
-        const products = getProducts().slice(0, 8); // Máximo 8 productos
+        let products = getProducts();
+        if (currentSearchTerm) {
+            products = products.filter(p => 
+                (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
+                (p.type && p.type.toLowerCase().includes(currentSearchTerm)) ||
+                (p.category && p.category.toLowerCase().includes(currentSearchTerm))
+            );
+        }
+        products = products.slice(0, 8); // Máximo 8 productos
+
         grid.innerHTML = '';
         
         products.forEach(p => {
+            let stockHtml = '';
+            let btnDisabled = '';
+            let btnClass = 'mt-auto w-full py-2 text-xs bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors';
+            
+            if (p.stock > 10) {
+                stockHtml = `<p class="text-xs mb-2 text-slate-600"><strong>Stock: ${p.stock}</strong> 🟢</p>`;
+            } else if (p.stock > 0 && p.stock <= 10) {
+                stockHtml = `<p class="text-xs mb-2 text-orange-600"><strong>Stock: ${p.stock}</strong> 🟠</p>`;
+            } else {
+                stockHtml = `<p class="text-xs mb-2 text-red-600"><strong>Agotado</strong> 🔴</p>`;
+                btnDisabled = 'disabled';
+                btnClass = 'mt-auto w-full py-2 text-xs bg-slate-100 text-slate-400 font-bold rounded-lg cursor-not-allowed';
+            }
+
+            const typeTag = p.type ? `<div class="mb-2 flex justify-end min-h-[20px]"><span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-md text-[10px] font-bold leading-none">${p.type}</span></div>` : '<div class="mb-2 min-h-[20px]"></div>';
+
             const div = document.createElement('div');
             div.className = 'bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center flex flex-col justify-between';
             div.innerHTML = `
+                ${typeTag}
                 <div>
-                    <img src="${p.img}" class="h-24 w-full object-cover rounded-md mb-2 bg-surface-container-low">
-                    <p class="font-bold text-sm leading-tight mb-1">${p.name}</p>
-                    <p class="text-primary font-bold mb-2">S/. ${parseFloat(p.price).toFixed(2)}</p>
+                    <img src="${p.img}" class="h-24 w-full object-cover rounded-md mb-2 bg-surface-container-low ${p.stock === 0 ? 'opacity-50' : ''}">
+                    <p class="font-bold text-sm leading-tight mb-1">${p.name} ${p.presentation || ''}</p>
+                    <p class="text-primary font-bold mb-1">S/. ${parseFloat(p.price).toFixed(2)}</p>
+                    ${stockHtml}
                 </div>
-                <button onclick="addToCart(${p.id})" class="mt-auto w-full py-2 text-xs bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">Agregar</button>
+                <button onclick="addToCart(${p.id})" ${btnDisabled} class="${btnClass}">Agregar</button>
             `;
             grid.appendChild(div);
         });
@@ -375,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'flex justify-between items-center bg-surface-container-low p-2 rounded-lg';
             div.innerHTML = `
                 <div>
-                    <p class="text-sm font-bold truncate max-w-[150px]">${item.name}</p>
+                    <p class="text-sm font-bold truncate max-w-[150px]">${item.name} ${item.presentation || ''}</p>
                     <p class="text-xs text-slate-500">S/. ${parseFloat(item.price).toFixed(2)}</p>
                 </div>
                 <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-full shadow-sm shrink-0">
