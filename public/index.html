@@ -587,14 +587,18 @@
                         <div class="p-6 bg-surface-container-low rounded-xl">
                             <h5 class="text-sm font-bold text-teal-900 mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> Detalle de Productos recibidos</h5>
                             <div class="grid grid-cols-12 gap-4">
-                                <div class="col-span-6">
+                                <div class="col-span-4">
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase">Producto</label>
                                     <input list="proveedores-products" id="provider-product" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none focus:ring-1" placeholder="Ej. Aceite Primor..." />
                                     <datalist id="proveedores-products"></datalist>
                                 </div>
-                                <div class="col-span-3">
+                                <div class="col-span-2">
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase">Cant. Recibida</label>
                                     <input id="provider-qty" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none" type="number" min="1"/>
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Fecha Venc. Lote</label>
+                                    <input id="provider-product-expiry" class="w-full bg-white rounded-lg px-3 py-2 text-sm mt-1 border-none" type="date"/>
                                 </div>
                                 <div class="col-span-3">
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase">Costo Total (S/.)</label>

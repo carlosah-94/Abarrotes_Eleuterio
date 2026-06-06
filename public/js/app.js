@@ -33,10 +33,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initData();
 
-    // Acceso a datos
+    // Acceso a datos con normalización automática de lotes y campos faltantes
     function getProducts() {
-        return JSON.parse(localStorage.getItem('products')) || [];
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+        let updated = false;
+        products.forEach(p => {
+            if (!p.batches) {
+                p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
+                updated = true;
+            }
+            if (p.salesCount === undefined) {
+                p.salesCount = 0;
+                updated = true;
+            }
+        });
+        if (updated) {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+        return products;
     }
+
     function saveProducts(products) {
         localStorage.setItem('products', JSON.stringify(products));
         renderInventory();
@@ -44,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProviderDatalist();
         updateCategoryDatalist();
     }
+
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
     }
@@ -277,12 +294,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const idx = products.findIndex(p => p.id === editingId);
         
         if(idx !== -1) {
-            products[idx].name = document.getElementById('edit-product-name').value;
-            products[idx].presentation = document.getElementById('edit-product-size').value;
+            const newName = document.getElementById('edit-product-name').value;
+            const newSize = document.getElementById('edit-product-size').value;
             const typeInput = document.getElementById('edit-product-type');
-            products[idx].type = typeInput ? typeInput.value : '';
-            products[idx].price = parseFloat(document.getElementById('edit-product-price').value);
-            products[idx].dueDate = document.getElementById('edit-product-date').value;
+            const newType = typeInput ? typeInput.value : '';
+            const newPrice = parseFloat(document.getElementById('edit-product-price').value);
+            const newDueDate = document.getElementById('edit-product-date').value;
+            const catInput = document.getElementById('edit-product-category');
+            const newCat = catInput ? catInput.value.trim() : 'Abarrotes';
+
+            products[idx].name = newName;
+            products[idx].presentation = newSize;
+            products[idx].type = newType;
+            products[idx].price = newPrice;
+            products[idx].dueDate = newDueDate;
+            products[idx].category = newCat;
+
+            // Sincronizar lotes
+            if (!products[idx].batches || products[idx].batches.length === 0) {
+                products[idx].batches = [{ qty: products[idx].stock, dueDate: newDueDate }];
+            } else {
+                products[idx].batches.sort((a, b) => {
+                    if (!a.dueDate) return 1;
+                    if (!b.dueDate) return -1;
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                });
+                products[idx].batches[0].dueDate = newDueDate;
+            }
+
             saveProducts(products);
         }
         closeModal('modal-edit-product');
@@ -292,22 +331,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-add-product').addEventListener('submit', (e) => {
         e.preventDefault();
         const products = getProducts();
-        const categorySelect = document.getElementById('add-product-category');
+        const catInput = document.getElementById('add-product-category');
+        const categoryVal = catInput ? catInput.value.trim() : 'Abarrotes';
         
+        const priceVal = parseFloat(document.getElementById('add-product-price').value);
+        const stockVal = parseInt(document.getElementById('add-product-stock').value, 10);
+        const dateVal = document.getElementById('add-product-date').value;
+        const nameVal = document.getElementById('add-product-name').value;
+        const sizeVal = document.getElementById('add-product-size').value;
+        const typeVal = document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '';
+
         const newProduct = {
             id: Date.now(),
-            name: document.getElementById('add-product-name').value,
-            presentation: document.getElementById('add-product-size').value,
-            type: document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '',
-            price: parseFloat(document.getElementById('add-product-price').value),
-            stock: parseInt(document.getElementById('add-product-stock').value, 10),
-            dueDate: document.getElementById('add-product-date').value,
-            category: categorySelect.options[categorySelect.selectedIndex].text,
-            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54'
+            name: nameVal,
+            presentation: sizeVal,
+            type: typeVal,
+            price: priceVal,
+            stock: stockVal,
+            dueDate: dateVal,
+            category: categoryVal,
+            img: DEFAULT_PRODUCT_IMAGE,
+            batches: [{ qty: stockVal, dueDate: dateVal }],
+            salesCount: 0
         };
         
         products.push(newProduct);
-        saveProducts(products); // Renderiza autom.
+        saveProducts(products); // Renderiza y limpia notificaciones
         
         e.target.reset();
         closeModal('modal-add-product');
@@ -444,30 +493,58 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Finalizar Venta
-    document.getElementById('form-sale').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const cart = getCart();
-        if(cart.length === 0) {
-             alert('El carrito está vacío');
-             return;
+document.getElementById('form-sale').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const cart = getCart();
+    if(cart.length === 0) {
+        alert('El carrito está vacío');
+        return;
+    }
+    
+    const products = getProducts();
+    
+    cart.forEach(cartItem => {
+        const p = products.find(p => p.id === cartItem.id);
+        if(p) {
+            let qtyToDeduct = cartItem.qty;
+            if (!p.batches) p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
+            
+            p.batches.sort((a, b) => {
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            for (let i = 0; i < p.batches.length; i++) {
+                if (qtyToDeduct <= 0) break;
+                const batch = p.batches[i];
+                if (batch.qty > 0) {
+                    if (batch.qty >= qtyToDeduct) {
+                        batch.qty -= qtyToDeduct;
+                        qtyToDeduct = 0;
+                    } else {
+                        qtyToDeduct -= batch.qty;
+                        batch.qty = 0;
+                    }
+                }
+            }
+            
+            p.batches = p.batches.filter(b => b.qty > 0);
+            if (p.batches.length === 0) {
+                p.batches = [{ qty: 0, dueDate: '' }];
+            }
+            
+            p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
+            const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
+            p.dueDate = activeDates.length > 0 ? activeDates.sort()[0] : '';
+            p.salesCount = (p.salesCount || 0) + cartItem.qty;
         }
-        
-        // Reducir stock del inventario
-        const products = getProducts();
-        
-        cart.forEach(cartItem => {
-             const prodIdx = products.findIndex(p => p.id === cartItem.id);
-             if(prodIdx !== -1) {
-                  products[prodIdx].stock -= cartItem.qty;
-             }
-        });
-        
-        saveProducts(products); // Guarda inventario actualizado
-        saveCart([]); // Limpia el carrito
-        
-        alert('Venta finalizada exitosamente.\nSe ha descontado del inventario.');
     });
- 
+    
+    saveProducts(products);
+    saveCart([]);
+    alert('Venta finalizada exitosamente.');
+}); 
     // === LÓGICA DE PROVEEDORES ===
     let currentProviderOrder = [];
 
@@ -511,10 +588,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addProviderProduct = function() {
         const inputName = document.getElementById('provider-product');
         const inputQty = document.getElementById('provider-qty');
+        const inputExpiry = document.getElementById('provider-product-expiry');
         const inputCost = document.getElementById('provider-cost');
 
         const name = inputName.value.trim();
         const qty = parseInt(inputQty.value, 10);
+        const expiry = inputExpiry.value;
         const cost = parseFloat(inputCost.value);
 
         if(!name || isNaN(qty) || qty <= 0 || isNaN(cost) || cost <= 0) {
@@ -522,12 +601,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentProviderOrder.push({ name, qty, cost });
+        // Validar que el producto ya exista en el catálogo de inventario
+        const products = getProducts();
+        const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (!exists) {
+            alert(`El producto "${name}" no existe en el inventario. Debe crearlo primero en la pestaña de Inventario.`);
+            return;
+        }
+
+        currentProviderOrder.push({ name, qty, expiry, cost });
         renderProviderOrder();
 
         // Limpiar inputs del producto
         inputName.value = '';
         inputQty.value = '';
+        inputExpiry.value = '';
         inputCost.value = '';
     };
 
@@ -536,43 +624,37 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProviderOrder();
     };
 
-    document.getElementById('form-proveedores').addEventListener('submit', (e) => {
-        e.preventDefault();
-        if(currentProviderOrder.length === 0) {
-            alert('Añade al menos un producto a la orden detallada abajo.');
-            return;
-        }
+document.getElementById('form-proveedores').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if(currentProviderOrder.length === 0) {
+        alert('Añade al menos un producto a la orden.');
+        return;
+    }
 
-        const products = getProducts();
-        
-        // Sumar stock si el producto existe
-        currentProviderOrder.forEach(orderItem => {
-            const existing = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
-            if(existing) {
-                existing.stock += orderItem.qty;
-            } else {
-                // Producto nuevo, lo agregamos al inventario por defecto
-                products.push({
-                    id: Date.now() + Math.random(),
-                    name: orderItem.name,
-                    price: 0, // Precio de venta 0 por defecto si no lo tenian registrado
-                    stock: orderItem.qty,
-                    category: 'Abarrotes',
-                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U'
-                });
+    const products = getProducts();
+    
+    currentProviderOrder.forEach(orderItem => {
+        const p = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
+        if(p) {
+            if (!p.batches) p.batches = [];
+            p.batches.push({ qty: orderItem.qty, dueDate: orderItem.expiry });
+            
+            p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
+            const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
+            if (activeDates.length > 0) {
+                activeDates.sort();
+                p.dueDate = activeDates[0];
             }
-        });
-
-        saveProducts(products); // Actualiza localStorage
-
-        alert('Orden Registrada Exitosamente en el inventario.');
-        
-        // Limpiamos todo
-        currentProviderOrder = [];
-        renderProviderOrder();
-        e.target.reset(); // Botón form reset
+        }
     });
 
+    saveProducts(products);
+    alert('Orden Registrada Exitosamente.');
+    
+    currentProviderOrder = [];
+    renderProviderOrder();
+    e.target.reset();
+});
 
     // Validar Formularios - Simular navegación
     document.querySelectorAll('form').forEach(form => {
