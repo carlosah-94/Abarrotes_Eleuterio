@@ -128,16 +128,15 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <div class="flex justify-between items-center px-1">
+                        <div class="flex justify-between items-center px-1">
                                 <label class="block text-sm font-semibold text-on-surface-variant">Contraseña</label>
-                                <a class="text-xs font-bold text-primary hover:text-primary-container transition-colors" href="#">¿Olvidó su contraseña?</a>
                             </div>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-[20px]">lock</span>
                                 </div>
-                                <input class="block w-full pl-11 pr-12 py-4 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-outline/50 font-medium" placeholder="••••••••" required type="password"/>
-                                <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+                                <input id="login-password" class="block w-full pl-11 pr-12 py-4 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-outline/50 font-medium" placeholder="••••••••" required type="password"/>
+                                <button id="login-toggle-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                                 </button>
                             </div>

@@ -50,6 +50,21 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('cart', JSON.stringify(cart));
         renderCart();
     }
+        // Mostrar/ocultar contraseña en el login
+    const loginToggleBtn = document.getElementById('login-toggle-password');
+    const loginPasswordInput = document.getElementById('login-password');
+    if (loginToggleBtn && loginPasswordInput) {
+        loginToggleBtn.addEventListener('click', () => {
+            const iconSpan = loginToggleBtn.querySelector('span');
+            if (loginPasswordInput.type === 'password') {
+                loginPasswordInput.type = 'text';
+                if (iconSpan) iconSpan.innerText = 'visibility_off';
+            } else {
+                loginPasswordInput.type = 'password';
+                if (iconSpan) iconSpan.innerText = 'visibility';
+            }
+        });
+    }
 
     // Funciones de navegación principal
     window.navigateTo = function(viewName) {
