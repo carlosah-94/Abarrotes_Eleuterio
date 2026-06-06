@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'reportes': document.getElementById('app-reportes'),
         'proveedores': document.getElementById('app-proveedores')
     };
+        // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+    function normalizeText(text) {
+        if (!text) return '';
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
 
     // Inicializar los datos de LocalStorage
     function initData() {
@@ -161,16 +166,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    window.renderInventory = function() {
+        window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
         
         let allProducts = getProducts();
+        
+        // Calcular tarjetas dinámicas de inventario
+        const totalProducts = allProducts.length;
+        const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price) || 0) * (p.stock || 0), 0);
+        const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
+        const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
+
+        const cardTotal = document.getElementById('card-total-products');
+        const cardValue = document.getElementById('card-inventory-value');
+        const cardCritical = document.getElementById('card-critical-stock');
+        const cardCats = document.getElementById('card-categories-count');
+
+        if (cardTotal) cardTotal.innerText = totalProducts;
+        if (cardValue) cardValue.innerText = `S/. ${totalValue.toFixed(2)}`;
+        if (cardCritical) cardCritical.innerText = criticalStockCount;
+        if (cardCats) cardCats.innerText = uniqueCats;
+
+        // Búsqueda insensible a mayúsculas y tildes
         if (currentSearchTerm) {
+            const cleanSearch = normalizeText(currentSearchTerm);
             allProducts = allProducts.filter(p => 
-                (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
-                (p.type && p.type.toLowerCase().includes(currentSearchTerm)) ||
-                (p.category && p.category.toLowerCase().includes(currentSearchTerm))
+                normalizeText(p.name).includes(cleanSearch) ||
+                (p.presentation && normalizeText(p.presentation).includes(cleanSearch)) ||
+                (p.type && normalizeText(p.type).includes(cleanSearch)) ||
+                normalizeText(p.category).includes(cleanSearch)
             );
         }
         
