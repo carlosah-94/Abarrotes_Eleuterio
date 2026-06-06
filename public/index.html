@@ -322,7 +322,7 @@
                                 <h2 class="text-4xl font-extrabold font-headline text-teal-900 mt-2 mb-6">Ventas del Día</h2>
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-2xl font-bold text-primary">S/.</span>
-                                    <span class="text-6xl font-black text-primary tracking-tighter font-headline">1,450.20</span>
+                                    <span id="dashboard-sales-today" class="text-6xl font-black text-primary tracking-tighter font-headline">0.00</span>
                                 </div>
                             </div>
                             <div class="mt-12 flex justify-end relative z-10">
@@ -342,7 +342,7 @@
                                     <span class="material-symbols-outlined text-5xl text-tertiary" style="font-variation-settings: 'FILL' 1;">inventory</span>
                                 </div>
                                 <div>
-                                    <span class="text-7xl font-black text-on-surface font-headline">12</span>
+                                    <span id="dashboard-low-stock-count" class="text-7xl font-black text-on-surface font-headline">0</span>
                                     <p class="text-slate-500 font-medium">Artículos por reponer</p>
                                 </div>
                             </div>
@@ -384,7 +384,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
                         <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary">
                             <span class="text-xs font-bold text-on-surface-variant uppercase">Total Productos</span>
-                            <div class="mt-2"><span class="text-3xl font-extrabold text-primary font-headline">1,248</span></div>
+                            <div class="mt-2"><span id="card-total-products" class="text-3xl font-extrabold text-primary font-headline">0</span></div>
                         </div>
                         <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-secondary">
                             <span class="text-xs font-bold text-on-surface-variant uppercase">Valor Inventario</span>
@@ -392,11 +392,11 @@
                         </div>
                         <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-tertiary">
                             <span class="text-xs font-bold text-on-surface-variant uppercase">Stock Crítico</span>
-                            <div class="mt-2 text-tertiary"><span class="text-3xl font-extrabold font-headline">8</span> Requiere acción</div>
+                            <div class="mt-2 text-tertiary"><span id="card-critical-stock" class="text-3xl font-extrabold font-headline">0</span> Requiere acción</div>
                         </div>
                         <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary-container">
                             <span class="text-xs font-bold text-on-surface-variant uppercase">Categorías</span>
-                            <div class="mt-2"><span class="text-3xl font-extrabold text-primary-container font-headline">24</span></div>
+                            <div class="mt-2"><span id="card-categories-count" class="text-3xl font-extrabold text-primary-container font-headline">0</span></div>
                         </div>
                     </div>
                     <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
