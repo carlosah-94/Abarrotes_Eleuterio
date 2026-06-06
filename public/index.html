@@ -657,11 +657,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs font-bold text-outline uppercase mb-2">Categoría</label>
-                        <select id="add-product-category" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3">
-                            <option value="abarrotes">Abarrotes</option>
-                            <option value="lacteos">Lácteos y Huevos</option>
-                            <option value="bebidas">Bebidas</option>
-                        </select>
+                        <input id="add-product-category" list="categories-list" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3" placeholder="Escribe o selecciona..." required />
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-outline uppercase mb-2">Fecha Vencimiento</label>
@@ -706,7 +702,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Categoría</label>
-                        <select class="w-full bg-white border border-slate-100 rounded-lg px-4 py-2 text-sm"><option selected>Abarrotes</option></select>
+                        <input id="edit-product-category" list="categories-list" class="w-full bg-white border border-slate-100 rounded-lg px-4 py-2 text-sm" placeholder="Escribe o selecciona..." required />
                     </div>
                     <div class="space-y-1">
                         <label class="text-[0.6875rem] font-bold text-slate-400 uppercase">Stock Actual</label>
@@ -763,6 +759,8 @@
         </div>
     </div>
     
+    <datalist id="categories-list"></datalist>
+
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderInventory();
         renderFrequentProducts();
         updateProviderDatalist();
+        updateCategoryDatalist();
     }
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
@@ -145,6 +146,26 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFrequentProducts();
         });
     }
+
+    // Autocompletado de categorías
+    window.updateCategoryDatalist = function() {
+        const datalist = document.getElementById('categories-list');
+        if (!datalist) return;
+        datalist.innerHTML = '';
+        
+        const products = getProducts();
+        const cats = new Set(products.map(p => p.category).filter(Boolean));
+        if (cats.size === 0) {
+            cats.add('Abarrotes');
+            cats.add('Lácteos');
+            cats.add('Bebidas');
+        }
+        cats.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            datalist.appendChild(opt);
+        });
+    };
 
     window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
