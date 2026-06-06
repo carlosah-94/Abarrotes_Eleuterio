@@ -33,24 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initData();
 
-    // Imagen por defecto en formato SVG Data URL (Elegante, autocompletada y sin comillas dobles internas para evitar conflictos en HTML)
-    const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><g fill='none' stroke='%2394a3b8' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M60 80h80v70a10 10 0 0 1-10 10H70a10 10 0 0 1-10-10V80z'/><path d='M85 80V60a15 15 0 0 1 30 0v20'/></g><text x='100' y='170' font-family='system-ui, sans-serif' font-size='13' font-weight='600' fill='%2364748b' text-anchor='middle'>Sin Imagen</text></svg>";
+// Imagen por defecto en formato SVG Data URL (Elegante, autocompletada y sin comillas dobles internas para evitar conflictos en HTML)
+const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><g fill='none' stroke='%2394a3b8' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M60 80h80v70a10 10 0 0 1-10 10H70a10 10 0 0 1-10-10V80z'/><path d='M85 80V60a15 15 0 0 1 30 0v20'/></g><text x='100' y='170' font-family='system-ui, sans-serif' font-size='13' font-weight='600' fill='%2364748b' text-anchor='middle'>Sin Imagen</text></svg>";
 
-    // Función auxiliar para obtener la imagen correcta de un producto
-    function getProductImage(p) {
-        const oldMilkImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54';
-        if (!p.img || (p.img === oldMilkImage && !p.name.toLowerCase().includes('leche'))) {
-            return DEFAULT_PRODUCT_IMAGE;
-        }
-        return p.img;
+// Función auxiliar para obtener la imagen correcta de un producto
+function getProductImage(p) {
+    const oldMilkImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54';
+    if (!p.img || (p.img === oldMilkImage && !p.name.toLowerCase().includes('leche'))) {
+        return DEFAULT_PRODUCT_IMAGE;
     }
+    return p.img;
+}
 
-    // Función auxiliar temporal para normalizar texto (quitar tildes)
-    function normalizeText(text) {
-        if (!text) return '';
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    }
-
+// Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+function normalizeText(text) {
+    if (!text) return '';
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
     // Acceso a datos
     function getProducts() {
         return JSON.parse(localStorage.getItem('products')) || [];
