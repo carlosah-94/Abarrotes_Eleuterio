@@ -303,9 +303,9 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="openModal('modal-notifications')" class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors relative">
+                    <button onclick="toggleNotifications(event)" class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors relative">
                         <span class="material-symbols-outlined">notifications</span>
-                        <span class="absolute top-2 right-2 w-2 h-2 bg-tertiary rounded-full"></span>
+                        <span id="notification-badge" class="absolute -top-1 -right-1 bg-tertiary text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
                     </button>
                 </div>
             </header>
@@ -737,28 +737,17 @@
     <div id="modal-notifications" class="modal-overlay hidden fixed inset-0 z-50 flex items-start justify-end p-6 md:p-12 pointer-events-none bg-transparent backdrop-blur-none">
         <div class="w-full max-w-sm bg-surface-container-lowest/95 backdrop-blur-[40px] rounded-[1.5rem] shadow-2xl pointer-events-auto overflow-hidden border border-slate-200">
             <div class="px-6 py-4 flex justify-between items-center border-b border-outline-variant/10">
-                <h2 class="font-headline font-bold text-lg text-primary">Notificaciones</h2>
-                <button type="button" onclick="closeModal('modal-notifications')" class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined text-outline">close</span></button>
+                <div class="flex items-center gap-2">
+                    <h2 class="font-headline font-bold text-lg text-primary">Notificaciones</h2>
+                    <span id="notification-modal-count" class="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="clearAllNotifications()" class="text-xs font-bold text-slate-400 hover:text-tertiary transition-colors mr-2">Limpiar todas</button>
+                    <button type="button" onclick="closeModal('modal-notifications')" class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined text-outline">close</span></button>
+                </div>
             </div>
-            <div class="py-2">
-                <div class="px-6 py-4 hover:bg-surface-container-low flex gap-4 cursor-pointer">
-                    <div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">warning</span>
-                    </div>
-                    <div>
-                        <span class="font-body font-semibold text-sm block">Bajo stock: Leche (2 pzas)</span>
-                        <span class="text-xs text-on-surface-variant">Hace 15 minutos</span>
-                    </div>
-                </div>
-                <div class="px-6 py-4 hover:bg-surface-container-low flex gap-4 cursor-pointer">
-                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
-                    </div>
-                    <div>
-                        <span class="font-body font-semibold text-sm block">Venta registrada: S/. 45.00</span>
-                        <span class="text-xs text-on-surface-variant">Hace 45 minutos</span>
-                    </div>
-                </div>
+            <div id="notifications-list" class="py-2 max-h-[350px] overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                <!-- DINÁMICO -->
             </div>
         </div>
     </div>
