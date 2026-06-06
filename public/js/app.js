@@ -151,6 +151,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tableBody) return;
         
         let allProducts = getProducts();
+
+        // Calcular tarjetas dinámicas de inventario
+        const totalProducts = allProducts.length;
+        const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price)  0) * (p.stock 
+ 0), 0);
+        const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
+        const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
+
+        const cardTotal = document.getElementById('card-total-products');
+        const cardValue = document.getElementById('card-inventory-value');
+        const cardCritical = document.getElementById('card-critical-stock');
+        const cardCats = document.getElementById('card-categories-count');
+
+        if (cardTotal) cardTotal.innerText = totalProducts;
+        if (cardValue) cardValue.innerText = S/. ${totalValue.toFixed(2)};
+        if (cardCritical) cardCritical.innerText = criticalStockCount;
+        if (cardCats) cardCats.innerText = uniqueCats;
+        
         if (currentSearchTerm) {
             allProducts = allProducts.filter(p => 
                 (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
@@ -570,6 +588,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+        // === PANEL DE CONTROL / DASHBOARD FUNCIONAL ===
+    window.updateDashboard = function() {
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        const products = getProducts();
+        
+        const startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        
+        // Ventas del día actual (se resetea automáticamente al iniciar el nuevo día)
+        const salesToday = sales
+            .filter(s => new Date(s.date) >= startOfToday)
+            .reduce((sum, s) => sum + s.total, 0);
+            
+        // Productos con bajo stock
+        const lowStockCount = products.filter(p => p.stock <= 10).length;
+        
+        const salesValElement = document.getElementById('dashboard-sales-today');
+        const lowStockElement = document.getElementById('dashboard-low-stock-count');
+        
+        if (salesValElement) salesValElement.innerText = salesToday.toFixed(2);
+        if (lowStockElement) lowStockElement.innerText = lowStockCount;
+    };
+
 
     // Logout
     document.querySelectorAll('[data-action="logout"]').forEach(btn => {
