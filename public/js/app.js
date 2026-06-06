@@ -601,7 +601,7 @@ function saveProducts(products) {
         });
     });
 
-    // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En tiempo real y domingos) ===
+    // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En vivo y domingos) ===
     window.checkNotifications = function() {
         const products = getProducts();
         const today = new Date();
