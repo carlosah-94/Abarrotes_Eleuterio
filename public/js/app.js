@@ -772,13 +772,19 @@ function saveProducts(products) {
     });
 
 // Inicializar renders e interfaces al cargar
+    updateCategoryDatalist();
     renderInventory();
     renderFrequentProducts();
     renderCart();
+    updateDashboard();
     checkNotifications();
+    updateReportsSummary();
+    renderProvidersListInReports();
+    checkSundayResetAndDownload();
 
     // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
     setInterval(() => {
-        checkNotifications();
+        updateDashboard();
+        checkSundayResetAndDownload();
     }, 30000);
 });
