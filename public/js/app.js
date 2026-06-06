@@ -37,13 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function getProducts() {
         return JSON.parse(localStorage.getItem('products')) || [];
     }
-    function saveProducts(products) {
+function saveProducts(products) {
         localStorage.setItem('products', JSON.stringify(products));
         renderInventory();
         renderFrequentProducts();
         updateProviderDatalist();
-    }
-    function getCart() {
+        updateCategoryDatalist();
+        updateDashboard(); 
+        checkNotifications();
+    }    function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
     }
     function saveCart(cart) {
@@ -154,8 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Calcular tarjetas dinámicas de inventario
         const totalProducts = allProducts.length;
-        const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price)  0) * (p.stock 
- 0), 0);
+        const totalValue = allProducts.reduce((sum, p) => {
+            const price = parseFloat(p.price) || 0;
+            const stock = parseInt(p.stock, 10) || 0;
+            return sum + price * stock;
+        }, 0);
         const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
         const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
 
@@ -165,10 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardCats = document.getElementById('card-categories-count');
 
         if (cardTotal) cardTotal.innerText = totalProducts;
-        if (cardValue) cardValue.innerText = S/. ${totalValue.toFixed(2)};
+        if (cardValue) cardValue.innerText = `S/. ${totalValue.toFixed(2)}`;
         if (cardCritical) cardCritical.innerText = criticalStockCount;
         if (cardCats) cardCats.innerText = uniqueCats;
-        
+
         if (currentSearchTerm) {
             allProducts = allProducts.filter(p => 
                 (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
@@ -612,6 +617,80 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lowStockElement) lowStockElement.innerText = lowStockCount;
     };
 
+// Reseteo automático de contadores diarios (medianoche)
+    window.resetDailyCounters = function() {
+        const lastDate = localStorage.getItem('lastResetDate');
+        const today = new Date().toISOString().split('T')[0];
+
+        if (lastDate !== today) {
+            // Limpiar contadores del dashboard (se recalcularán solos al recargar datos)
+            // Opcional: Limpiar notificaciones del día anterior si se desea
+            console.log('Reseteando contadores diarios para la fecha:', today);
+            localStorage.setItem('lastResetDate', today);
+
+            // Forzar actualización de UI
+            updateDashboard();
+            checkNotifications();
+        }
+    };
+
+    // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+    function normalizeText(text) {
+        if (!text) return '';
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    window.updateCategoryDatalist = function() {
+        const datalist = document.getElementById('categories-datalist');
+        if (!datalist) return;
+
+        datalist.innerHTML = '';
+        const categories = [...new Set(getProducts().map(p => p.category).filter(Boolean))];
+        categories.forEach(category => {
+            const opt = document.createElement('option');
+            opt.value = category;
+            datalist.appendChild(opt);
+        });
+    };
+
+    window.checkNotifications = function() {
+        const notificationBanner = document.getElementById('notification-banner');
+        if (!notificationBanner) return;
+
+        const lowStockCount = getProducts().filter(p => parseInt(p.stock, 10) <= 5).length;
+        if (lowStockCount > 0) {
+            notificationBanner.innerText = `Productos con stock bajo: ${lowStockCount}`;
+            notificationBanner.classList.remove('hidden');
+        } else {
+            notificationBanner.classList.add('hidden');
+        }
+    };
+
+    window.updateReportsSummary = function() {
+        const summaryElement = document.getElementById('reports-summary');
+        if (!summaryElement) return;
+
+        const products = getProducts();
+        const totalValue = products.reduce((sum, p) => {
+            const price = parseFloat(p.price) || 0;
+            const stock = parseInt(p.stock, 10) || 0;
+            return sum + price * stock;
+        }, 0);
+
+        summaryElement.innerText = `Productos: ${products.length} • Valor inventario: S/. ${totalValue.toFixed(2)}`;
+    };
+
+    window.renderProvidersListInReports = function() {
+        const listElement = document.getElementById('reports-providers-list');
+        if (!listElement) return;
+        listElement.innerHTML = '<p class="text-xs text-slate-500">No hay proveedores registrados.</p>';
+    };
+
+    window.checkSundayResetAndDownload = function() {
+        const sundayNotice = document.getElementById('sunday-notice');
+        if (!sundayNotice) return;
+        sundayNotice.classList.add('hidden');
+    };
 
     // Logout
     document.querySelectorAll('[data-action="logout"]').forEach(btn => {
@@ -621,8 +700,23 @@ document.addEventListener('DOMContentLoaded', () => {
          });
     });
 
-    // Inicializar renders on load
+// Inicializar renders e interfaces al cargar
+    updateCategoryDatalist();
     renderInventory();
     renderFrequentProducts();
     renderCart();
+    updateDashboard();
+    checkNotifications();
+    updateReportsSummary();
+    renderProvidersListInReports();
+    checkSundayResetAndDownload();
+    resetDailyCounters(); 
+
+    // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
+    setInterval(() => {
+        updateDashboard();
+        checkSundayResetAndDownload();
+        resetDailyCounters(); // <--- AGREGAR ESTA LÍNEA
+    }, 30000);
 });
+
