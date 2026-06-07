@@ -21,6 +21,11 @@ Es una plataforma web diseñada para optimizar la logística y el control de inv
 
 5. Abre tu navegador web e ingresa la dirección local predeterminada, que es `http://localhost:3000`
 
+**Sprint 2 - Mejoras y control de inventario**
+
+- **Nuevas Características:** Semáforo de stock (Prevención de ventas sin unidades), Alertas de vencimiento de productos, Filtrado y búsqueda global en tiempo real, Tipos de productos dinámicos (Retornables, etc.).
+- **Decisiones Técnicas:** Se restringió el modelo de usuarios a un entorno de negocio cerrado (Privado) eliminando registros públicos.
+
 ## Equipo de Desarrollo
 - **Connery Diaz** - Product Owner
 - **Carlos Atahua** - Scrum Master
