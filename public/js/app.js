@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'reportes': document.getElementById('app-reportes'),
         'proveedores': document.getElementById('app-proveedores')
     };
+        // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+    function normalizeText(text) {
+        if (!text) return '';
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
 
     // Inicializar los datos de LocalStorage
     function initData() {
@@ -69,6 +74,21 @@ function saveProducts(products) {
     function saveCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
         renderCart();
+    }
+        // Mostrar/ocultar contraseña en el login
+    const loginToggleBtn = document.getElementById('login-toggle-password');
+    const loginPasswordInput = document.getElementById('login-password');
+    if (loginToggleBtn && loginPasswordInput) {
+        loginToggleBtn.addEventListener('click', () => {
+            const iconSpan = loginToggleBtn.querySelector('span');
+            if (loginPasswordInput.type === 'password') {
+                loginPasswordInput.type = 'text';
+                if (iconSpan) iconSpan.innerText = 'visibility_off';
+            } else {
+                loginPasswordInput.type = 'password';
+                if (iconSpan) iconSpan.innerText = 'visibility';
+            }
+        });
     }
 
     // Funciones de navegación principal
@@ -166,19 +186,15 @@ function saveProducts(products) {
         });
     }
 
-    window.renderInventory = function() {
+        window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
         
         let allProducts = getProducts();
-
+        
         // Calcular tarjetas dinámicas de inventario
         const totalProducts = allProducts.length;
-        const totalValue = allProducts.reduce((sum, p) => {
-            const price = parseFloat(p.price) || 0;
-            const stock = parseInt(p.stock, 10) || 0;
-            return sum + price * stock;
-        }, 0);
+        const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price) || 0) * (p.stock || 0), 0);
         const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
         const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
 
@@ -192,11 +208,14 @@ function saveProducts(products) {
         if (cardCritical) cardCritical.innerText = criticalStockCount;
         if (cardCats) cardCats.innerText = uniqueCats;
 
+        // Búsqueda insensible a mayúsculas y tildes
         if (currentSearchTerm) {
+            const cleanSearch = normalizeText(currentSearchTerm);
             allProducts = allProducts.filter(p => 
-                (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
-                (p.type && p.type.toLowerCase().includes(currentSearchTerm)) ||
-                (p.category && p.category.toLowerCase().includes(currentSearchTerm))
+                normalizeText(p.name).includes(cleanSearch) ||
+                (p.presentation && normalizeText(p.presentation).includes(cleanSearch)) ||
+                (p.type && normalizeText(p.type).includes(cleanSearch)) ||
+                normalizeText(p.category).includes(cleanSearch)
             );
         }
         
