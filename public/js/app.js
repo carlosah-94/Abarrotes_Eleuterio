@@ -59,6 +59,9 @@ function saveProducts(products) {
         renderInventory();
         renderFrequentProducts();
         updateProviderDatalist();
+        updateCategoryDatalist();
+        updateDashboard(); 
+        checkNotifications();
         checkNotifications();  
     }    function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
@@ -168,6 +171,27 @@ function saveProducts(products) {
         if (!tableBody) return;
         
         let allProducts = getProducts();
+
+        // Calcular tarjetas dinámicas de inventario
+        const totalProducts = allProducts.length;
+        const totalValue = allProducts.reduce((sum, p) => {
+            const price = parseFloat(p.price) || 0;
+            const stock = parseInt(p.stock, 10) || 0;
+            return sum + price * stock;
+        }, 0);
+        const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
+        const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
+
+        const cardTotal = document.getElementById('card-total-products');
+        const cardValue = document.getElementById('card-inventory-value');
+        const cardCritical = document.getElementById('card-critical-stock');
+        const cardCats = document.getElementById('card-categories-count');
+
+        if (cardTotal) cardTotal.innerText = totalProducts;
+        if (cardValue) cardValue.innerText = `S/. ${totalValue.toFixed(2)}`;
+        if (cardCritical) cardCritical.innerText = criticalStockCount;
+        if (cardCats) cardCats.innerText = uniqueCats;
+
         if (currentSearchTerm) {
             allProducts = allProducts.filter(p => 
                 (p.name && p.name.toLowerCase().includes(currentSearchTerm)) ||
@@ -781,10 +805,13 @@ function saveProducts(products) {
     updateReportsSummary();
     renderProvidersListInReports();
     checkSundayResetAndDownload();
+    resetDailyCounters(); 
 
     // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
     setInterval(() => {
         updateDashboard();
         checkSundayResetAndDownload();
+        resetDailyCounters(); // <--- AGREGAR ESTA LÍNEA
     }, 30000);
 });
+
