@@ -18,6 +18,55 @@ document.addEventListener('DOMContentLoaded', () => {
         return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     }
 
+        // Convertidor de números a letras en español (Soles peruanos)
+    function numberToLetters(num) {
+        const units = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+        const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+        const twenties = ['VEINTE', 'VEINTIUNO', 'VEINTIDOS', 'VEINTITRES', 'VEINTICUATRO', 'VEINTICINCO', 'VEINTISEIS', 'VEINTISIETE', 'VEINTIOCHO', 'VEINTINUEVE'];
+        const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SIETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+        function convertGroup(n) {
+            if (n === 100) return 'CIEN';
+            let output = '';
+            let h = Math.floor(n / 100);
+            let r = n % 100;
+            if (h > 0) output += hundreds[h] + ' ';
+            if (r > 0) {
+                if (r < 10) output += units[r];
+                else if (r < 20) output += teens[r - 10];
+                else if (r < 30) output += twenties[r - 20];
+                else {
+                    let t = Math.floor(r / 10);
+                    let u = r % 10;
+                    output += tens[t];
+                    if (u > 0) output += ' Y ' + units[u];
+                }
+            }
+            return output.trim();
+        }
+
+        const integerPart = Math.floor(num);
+        const decimalPart = Math.round((num - integerPart) * 100);
+        const decimalStr = String(decimalPart).padStart(2, '0') + '/100 SOLES';
+
+        if (integerPart === 0) return 'CERO Y ' + decimalStr;
+
+        let result = '';
+        let thousands = Math.floor(integerPart / 1000);
+        let remainder = integerPart % 1000;
+
+        if (thousands > 0) {
+            if (thousands === 1) result += 'MIL ';
+            else result += convertGroup(thousands) + ' MIL ';
+        }
+        if (remainder > 0) {
+            result += convertGroup(remainder) + ' ';
+        }
+
+        return (result.trim() + ' CON ' + decimalStr).toUpperCase();
+    }
+
     // Inicializar los datos de LocalStorage
     function initData() {
         if (!localStorage.getItem('products')) {
@@ -486,6 +535,125 @@ document.addEventListener('DOMContentLoaded', () => {
         
         alert('Venta finalizada exitosamente.\nSe ha descontado del inventario.');
     });
+
+    // Descargar Comprobante PDF (Boleta Térmica de 80mm mejorada según imagen)
+    const btnReceipt = document.getElementById('btn-download-receipt');
+    if (btnReceipt) {
+        btnReceipt.addEventListener('click', () => {
+            const lastSale = JSON.parse(localStorage.getItem('lastSale'));
+            if (!lastSale) {
+                alert('No hay ninguna venta reciente para descargar comprobante.');
+                return;
+            }
+            generateReceiptPDF(lastSale);
+        });
+    }
+
+    function generateReceiptPDF(sale) {
+        const { jsPDF } = window.jspdf;
+        const itemsCount = sale.items.length;
+        // Altura dinámica: header + items + pie
+        const receiptHeight = 85 + (itemsCount * 6) + 55;
+        
+        const doc = new jsPDF({
+            unit: 'mm',
+            format: [80, Math.max(120, receiptHeight)]
+        });
+        
+        // --- 1. DIBUJAR QR PLACEHOLDER ---
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0);
+        doc.rect(28, 5, 24, 24); // Centrado en la cinta de 80mm
+        
+        // Patrones mock del QR
+        doc.setFillColor(0);
+        doc.rect(30, 7, 6, 6, "F");
+        doc.rect(44, 7, 6, 6, "F");
+        doc.rect(30, 21, 6, 6, "F");
+        doc.rect(38, 15, 4, 4, "F");
+        doc.rect(45, 22, 4, 4, "F");
+        
+        // --- 2. CABECERA DE LA TIENDA ---
+        doc.setFont("courier", "bold");
+        doc.setFontSize(11);
+        doc.text("ABARROTES ELEUTERIO", 40, 34, { align: "center" });
+        
+        doc.setFont("courier", "normal");
+        doc.setFontSize(7.5);
+        doc.text("Sector 6, Grupo 5-A, Mz. k, lote 24", 40, 38, { align: "center" });
+        doc.text("LIMA - LIMA - VILLA EL SALVADOR", 40, 42, { align: "center" });
+        doc.text("RUC: 10089803361", 40, 46, { align: "center" });
+        
+        doc.setFont("courier", "bold");
+        doc.text("BOLETA DE VENTA ELECTRONICA", 40, 51, { align: "center" });
+        
+        // Boleta ID (basado en los últimos 6 dígitos del ID)
+        const ticketNum = String(sale.id).substring(String(sale.id).length - 6);
+        doc.text(`B002-${ticketNum}`, 40, 55, { align: "center" });
+        
+        doc.setFont("courier", "normal");
+        const saleDate = new Date(sale.date);
+        doc.text(`FECHA EMISION: ${saleDate.toLocaleDateString()}`, 5, 60);
+        
+        doc.text("=====================================", 40, 64, { align: "center" });
+        doc.text("UDS DESCRIPCION          P.U.  IMPORTE", 5, 68);
+        doc.text("=====================================", 40, 72, { align: "center" });
+        
+        // --- 3. ITEMS DE LA COMPRA ---
+        let y = 76;
+        sale.items.forEach(item => {
+            const qtyStr = String(item.qty).padEnd(3, ' ');
+            const nameStr = item.name.substring(0, 15).padEnd(16, ' ');
+            const puStr = parseFloat(item.price).toFixed(2).padStart(8, ' ');
+            const totalStr = (item.price * item.qty).toFixed(2).padStart(11, ' ');
+            doc.text(`${qtyStr}${nameStr}${puStr}${totalStr}`, 5, y);
+            y += 6;
+        });
+        
+        doc.text("=====================================", 40, y, { align: "center" });
+        y += 5;
+        
+        // --- 4. TOTALES (Con desglose de IGV peruano incluido) ---
+        const baseImponible = sale.total / 1.18;
+        const igv = sale.total - baseImponible;
+        
+        doc.text(`BASE IMPONIBLE : S/. ${baseImponible.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 5;
+        doc.text(`IGV (18%)      : S/. ${igv.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 5;
+        doc.text("=====================================", 40, y, { align: "center" });
+        y += 5;
+        
+        doc.setFont("courier", "bold");
+        doc.text(`TOTAL S/       : S/. ${sale.total.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 7;
+        
+        // --- 5. MONTO EN LETRAS ---
+        doc.setFont("courier", "normal");
+        doc.setFontSize(7);
+        const letters = numberToLetters(sale.total);
+        const splitLetters = doc.splitTextToSize(letters, 70);
+        splitLetters.forEach(line => {
+            doc.text(line, 5, y);
+            y += 4;
+        });
+        
+        // --- 6. PIE DE PÁGINA ---
+        y += 2;
+        doc.text("Condición: Contado", 5, y);
+        y += 4;
+        const printDate = new Date();
+        const printDateStr = `${printDate.toLocaleDateString()} ${printDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        doc.text(`Impresión: ${printDateStr}`, 5, y);
+        
+        y += 6;
+        doc.setFontSize(6.5);
+        doc.text("Representación del Comprobante Electrónico, ingrese a:", 40, y, { align: "center" });
+        y += 4;
+        doc.text("www.abaroteseleuterio.com/cpe/comprobante", 40, y, { align: "center" });
+        
+        doc.save(`boleta_${sale.id}.pdf`);
+    }
  
     // === LÓGICA DE PROVEEDORES ===
     let currentProviderOrder = [];
@@ -591,6 +759,199 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProviderOrder();
         e.target.reset(); // Botón form reset
     });
+
+    // === REPORTES PDF ===
+    const btnSalesPdf = document.getElementById('btn-report-sales-pdf');
+    if (btnSalesPdf) {
+        btnSalesPdf.addEventListener('click', () => {
+            generateSalesWeeklyReportPDF();
+        });
+    }
+
+    const btnProvidersPdf = document.getElementById('btn-report-providers-pdf');
+    if (btnProvidersPdf) {
+        btnProvidersPdf.addEventListener('click', () => {
+            generateProvidersExpensesReportPDF();
+        });
+    }
+
+    function generateSalesWeeklyReportPDF(isAuto = false) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        
+        // Filtrar SOLO ventas activas (no archivadas)
+        const activeSales = sales.filter(s => !s.archived);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 83, 91); // Color primario
+        doc.text("Reporte Semanal de Ventas", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0, 83, 91);
+        doc.line(20, 36, 190, 36);
+        
+        // Tarjetas
+        doc.setFillColor(240, 244, 248);
+        doc.rect(20, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 83, 91);
+        doc.text("TOTAL VENDIDO", 25, 48);
+        const totalAmount = activeSales.reduce((sum, s) => sum + s.total, 0);
+        doc.setFontSize(16);
+        doc.text(`S/. ${totalAmount.toFixed(2)}`, 25, 60);
+        
+        doc.setFillColor(240, 244, 248);
+        doc.rect(110, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 83, 91);
+        doc.text("TRANSACCIONES", 115, 48);
+        doc.setFontSize(16);
+        doc.text(`${activeSales.length} ventas`, 115, 60);
+        
+        // Tabla
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50);
+        doc.text("Detalle de Ventas del Periodo", 20, 80);
+        
+        doc.setFontSize(10);
+        doc.text("Fecha y Hora", 20, 88);
+        doc.text("Código Boleta", 70, 88);
+        doc.text("Productos Vendidos", 110, 88);
+        doc.text("Total", 170, 88);
+        
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(200);
+        doc.line(20, 91, 190, 91);
+        
+        doc.setFont("helvetica", "normal");
+        let y = 97;
+        activeSales.slice(-20).forEach(sale => {
+            const dateStr = new Date(sale.date).toLocaleString();
+            const itemsText = sale.items.map(item => `${item.qty}x ${item.name}`).join(", ");
+            const splitItems = doc.splitTextToSize(itemsText, 55); // 55mm de ancho para envolver
+            
+            const linesCount = splitItems.length;
+            const rowHeight = Math.max(8, linesCount * 5);
+            
+            if (y + rowHeight > 280) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.text(dateStr, 20, y);
+            doc.text(`TKT-${sale.id}`, 70, y);
+            
+            // Imprimir texto multilínea
+            for (let i = 0; i < linesCount; i++) {
+                doc.text(splitItems[i], 110, y + (i * 5));
+            }
+            
+            doc.text(`S/. ${sale.total.toFixed(2)}`, 170, y);
+            y += rowHeight + 3;
+        });
+        
+        doc.save(`reporte_ventas_semanal_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+    }
+
+    function generateProvidersExpensesReportPDF(isAuto = false) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        
+        // Filtrar SOLO órdenes activas (no archivadas)
+        const activeOrders = orders.filter(o => !o.archived);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(43, 100, 133); // Color secundario
+        doc.text("Reporte de Gastos con Proveedores", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(43, 100, 133);
+        doc.line(20, 36, 190, 36);
+        
+        // Tarjetas
+        doc.setFillColor(240, 244, 248);
+        doc.rect(20, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(43, 100, 133);
+        doc.text("TOTAL INVERTIDO", 25, 48);
+        const totalExpenses = activeOrders.reduce((sum, o) => sum + o.total, 0);
+        doc.setFontSize(16);
+        doc.text(`S/. ${totalExpenses.toFixed(2)}`, 25, 60);
+        
+        doc.setFillColor(240, 244, 248);
+        doc.rect(110, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(43, 100, 133);
+        doc.text("REABASTECIMIENTOS", 115, 48);
+        doc.setFontSize(16);
+        doc.text(`${activeOrders.length} órdenes`, 115, 60);
+        
+        // Tabla
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50);
+        doc.text("Detalle de Órdenes a Proveedores", 20, 80);
+        
+        doc.setFontSize(10);
+        doc.text("Fecha", 20, 88);
+        doc.text("Proveedor", 50, 88);
+        doc.text("Detalle de Lotes Recibidos (Vencimiento)", 90, 88);
+        doc.text("Costo Total", 170, 88);
+        
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(200);
+        doc.line(20, 91, 190, 91);
+        
+        doc.setFont("helvetica", "normal");
+        let y = 97;
+        activeOrders.forEach(order => {
+            const itemsText = order.items.map(item => `${item.qty}x ${item.name} (Vence: ${item.expiry || 'N/A'})`).join(", ");
+            const splitItems = doc.splitTextToSize(itemsText, 75); // 75mm de ancho para envolver
+            
+            const linesCount = splitItems.length;
+            const rowHeight = Math.max(8, linesCount * 5);
+            
+            if (y + rowHeight > 280) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.text(order.date, 20, y);
+            doc.text(order.providerName || 'N/A', 50, y);
+            
+            // Imprimir texto multilínea
+            for (let i = 0; i < linesCount; i++) {
+                doc.text(splitItems[i], 90, y + (i * 5));
+            }
+            
+            doc.text(`S/. ${order.total.toFixed(2)}`, 170, y);
+            y += rowHeight + 3;
+        });
+        
+        doc.save(`reporte_proveedores_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+    }
+
 
 
     // Validar Formularios - Simular navegación
