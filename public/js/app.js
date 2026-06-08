@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function initData() {
         if (!localStorage.getItem('products')) {
             const initialProducts = [
-                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', salesCount: 0 },
-                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', salesCount: 0 },
-                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', salesCount: 0 },
-                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', salesCount: 0 },
-                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, salesCount: 0 },
-                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, salesCount: 0 }
+                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', batches: [{ qty: 42, dueDate: '2026-12-31' }], salesCount: 0 },
+                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', batches: [{ qty: 5, dueDate: '2026-06-30' }], salesCount: 0 },
+                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', batches: [{ qty: 120, dueDate: '2026-08-15' }], salesCount: 0 },
+                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', batches: [{ qty: 15, dueDate: '2026-06-10' }], salesCount: 0 },
+                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 30, dueDate: '2026-06-25' }], salesCount: 0 },
+                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 50, dueDate: '2027-01-20' }], salesCount: 0 }
             ];
             localStorage.setItem('products', JSON.stringify(initialProducts));
         }
@@ -112,11 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initData();
 
-    // Acceso a datos
+    // Acceso a datos con normalización automática de lotes y campos faltantes
     function getProducts() {
         const products = JSON.parse(localStorage.getItem('products')) || [];
         let updated = false;
         products.forEach(p => {
+            if (!p.batches) {
+                p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
+                updated = true;
+            }
             if (p.salesCount === undefined) {
                 p.salesCount = 0;
                 updated = true;
@@ -133,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderInventory();
         renderFrequentProducts();
         updateProviderDatalist();
+        updateCategoryDatalist();
         updateDashboard();
         checkNotifications();
     }
@@ -230,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (viewName === 'reportes') {
             updateReportsSummary();
+            renderProvidersListInReports();
         }
     };
 
@@ -284,6 +290,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Autocompletado de categorías
+    window.updateCategoryDatalist = function() {
+        const datalist = document.getElementById('categories-list');
+        if (!datalist) return;
+        datalist.innerHTML = '';
+        
+        const products = getProducts();
+        const cats = new Set(products.map(p => p.category).filter(Boolean));
+        if (cats.size === 0) {
+            cats.add('Abarrotes');
+            cats.add('Lácteos');
+            cats.add('Bebidas');
+        }
+        cats.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            datalist.appendChild(opt);
+        });
+    };
 
     window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
@@ -407,6 +432,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-product-price').value = product.price || 0;
         document.getElementById('edit-product-date').value = product.dueDate || '';
         
+        const catInput = document.getElementById('edit-product-category');
+        if(catInput) catInput.value = product.category || '';
+        
         openModal('modal-edit-product');
     };
 
@@ -417,12 +445,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const idx = products.findIndex(p => p.id === editingId);
         
         if(idx !== -1) {
-            products[idx].name = document.getElementById('edit-product-name').value;
-            products[idx].presentation = document.getElementById('edit-product-size').value;
+            const newName = document.getElementById('edit-product-name').value;
+            const newSize = document.getElementById('edit-product-size').value;
             const typeInput = document.getElementById('edit-product-type');
-            products[idx].type = typeInput ? typeInput.value : '';
-            products[idx].price = parseFloat(document.getElementById('edit-product-price').value);
-            products[idx].dueDate = document.getElementById('edit-product-date').value;
+            const newType = typeInput ? typeInput.value : '';
+            const newPrice = parseFloat(document.getElementById('edit-product-price').value);
+            const newDueDate = document.getElementById('edit-product-date').value;
+            const catInput = document.getElementById('edit-product-category');
+            const newCat = catInput ? catInput.value.trim() : 'Abarrotes';
+
+            products[idx].name = newName;
+            products[idx].presentation = newSize;
+            products[idx].type = newType;
+            products[idx].price = newPrice;
+            products[idx].dueDate = newDueDate;
+            products[idx].category = newCat;
+
+            // Sincronizar lotes
+            if (!products[idx].batches || products[idx].batches.length === 0) {
+                products[idx].batches = [{ qty: products[idx].stock, dueDate: newDueDate }];
+            } else {
+                products[idx].batches.sort((a, b) => {
+                    if (!a.dueDate) return 1;
+                    if (!b.dueDate) return -1;
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                });
+                products[idx].batches[0].dueDate = newDueDate;
+            }
+
             saveProducts(products);
         }
         closeModal('modal-edit-product');
@@ -432,23 +482,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-add-product').addEventListener('submit', (e) => {
         e.preventDefault();
         const products = getProducts();
-        const categorySelect = document.getElementById('add-product-category');
+        const catInput = document.getElementById('add-product-category');
+        const categoryVal = catInput ? catInput.value.trim() : 'Abarrotes';
         
+        const priceVal = parseFloat(document.getElementById('add-product-price').value);
+        const stockVal = parseInt(document.getElementById('add-product-stock').value, 10);
+        const dateVal = document.getElementById('add-product-date').value;
+        const nameVal = document.getElementById('add-product-name').value;
+        const sizeVal = document.getElementById('add-product-size').value;
+        const typeVal = document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '';
+
         const newProduct = {
             id: Date.now(),
-            name: document.getElementById('add-product-name').value,
-            presentation: document.getElementById('add-product-size').value,
-            type: document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '',
-            price: parseFloat(document.getElementById('add-product-price').value),
-            stock: parseInt(document.getElementById('add-product-stock').value, 10),
-            dueDate: document.getElementById('add-product-date').value,
-            category: categorySelect.options[categorySelect.selectedIndex].text,
+            name: nameVal,
+            presentation: sizeVal,
+            type: typeVal,
+            price: priceVal,
+            stock: stockVal,
+            dueDate: dateVal,
+            category: categoryVal,
             img: DEFAULT_PRODUCT_IMAGE,
+            batches: [{ qty: stockVal, dueDate: dateVal }],
             salesCount: 0
         };
         
         products.push(newProduct);
-        saveProducts(products);
+        saveProducts(products); // Renderiza y limpia notificaciones
         
         e.target.reset();
         closeModal('modal-add-product');
@@ -596,7 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cartTotalSpan.innerText = `S/. ${total.toFixed(2)}`;
     };
 
-    // Finalizar Venta
+    // Finalizar Venta (Lógica FEFO - First Expired, First Out)
     document.getElementById('form-sale').addEventListener('submit', (e) => {
         e.preventDefault();
         const cart = getCart();
@@ -608,15 +667,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const products = getProducts();
         
         cart.forEach(cartItem => {
-             const prodIdx = products.findIndex(p => p.id === cartItem.id);
-             if(prodIdx !== -1) {
-                  products[prodIdx].stock -= cartItem.qty;
-                  products[prodIdx].salesCount = (products[prodIdx].salesCount || 0) + cartItem.qty;
+             const p = products.find(p => p.id === cartItem.id);
+             if(p) {
+                 let qtyToDeduct = cartItem.qty;
+                 if (!p.batches) p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
+                 
+                 // Ordenar lotes por fecha de vencimiento (los más antiguos primero)
+                 p.batches.sort((a, b) => {
+                     if (!a.dueDate) return 1;
+                     if (!b.dueDate) return -1;
+                     return new Date(a.dueDate) - new Date(b.dueDate);
+                 });
+                 
+                 for (let i = 0; i < p.batches.length; i++) {
+                     if (qtyToDeduct <= 0) break;
+                     const batch = p.batches[i];
+                     if (batch.qty > 0) {
+                         if (batch.qty >= qtyToDeduct) {
+                             batch.qty -= qtyToDeduct;
+                             qtyToDeduct = 0;
+                         } else {
+                             qtyToDeduct -= batch.qty;
+                             batch.qty = 0;
+                         }
+                     }
+                 }
+                 
+                 // Filtrar lotes activos o vacíos
+                 p.batches = p.batches.filter(b => b.qty > 0);
+                 if (p.batches.length === 0) {
+                     p.batches = [{ qty: 0, dueDate: '' }];
+                 }
+                 
+                 // Recalcular stock y fecha de vencimiento
+                 p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
+                 const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
+                 if (activeDates.length > 0) {
+                     activeDates.sort();
+                     p.dueDate = activeDates[0];
+                 } else {
+                     p.dueDate = '';
+                 }
+                 
+                 p.salesCount = (p.salesCount || 0) + cartItem.qty;
              }
         });
         
-        saveProducts(products);
+        saveProducts(products); // Guarda inventario y renderiza
         
+        // Registrar en historial de ventas
         const salesHistory = JSON.parse(localStorage.getItem('salesHistory')) || [];
         const saleRecord = {
             id: Date.now(),
@@ -627,9 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         salesHistory.push(saleRecord);
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-        localStorage.setItem('lastSale', JSON.stringify(saleRecord));
+        localStorage.setItem('lastSale', JSON.stringify(saleRecord)); // Para descargar comprobante
         
-        saveCart([]);
+        saveCart([]); // Limpia el carrito
         
         alert('Venta finalizada exitosamente.\nSe ha descontado del inventario y registrado en el historial.');
         updateDashboard();
@@ -785,7 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `
                 <div class="flex-1">
                     <span class="font-bold text-on-surface">${item.name}</span>
-                    <span class="text-xs text-slate-500 block">Cant: ${item.qty}</span>
+                    <span class="text-xs text-slate-500 block">Cant: ${item.qty} | Venc: ${item.expiry || 'N/A'}</span>
                 </div>
                 <div class="font-headline font-bold text-primary mr-4">S/. ${parseFloat(item.cost).toFixed(2)}</div>
                 <button type="button" onclick="removeProviderProduct(${index})" class="text-error hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
@@ -799,10 +898,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addProviderProduct = function() {
         const inputName = document.getElementById('provider-product');
         const inputQty = document.getElementById('provider-qty');
+        const inputExpiry = document.getElementById('provider-product-expiry');
         const inputCost = document.getElementById('provider-cost');
 
         const name = inputName.value.trim();
         const qty = parseInt(inputQty.value, 10);
+        const expiry = inputExpiry.value;
         const cost = parseFloat(inputCost.value);
 
         if(!name || isNaN(qty) || qty <= 0 || isNaN(cost) || cost <= 0) {
@@ -810,11 +911,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentProviderOrder.push({ name, qty, cost });
+        // Validar que el producto ya exista en el catálogo de inventario
+        const products = getProducts();
+        const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (!exists) {
+            alert(`El producto "${name}" no existe en el inventario. Debe crearlo primero en la pestaña de Inventario.`);
+            return;
+        }
+
+        currentProviderOrder.push({ name, qty, expiry, cost });
         renderProviderOrder();
 
+        // Limpiar inputs del producto
         inputName.value = '';
         inputQty.value = '';
+        inputExpiry.value = '';
         inputCost.value = '';
     };
 
@@ -832,25 +943,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const products = getProducts();
         
+        // Sumar stock si el producto existe e insertar nuevo lote
         currentProviderOrder.forEach(orderItem => {
-            const existing = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
-            if(existing) {
-                existing.stock += orderItem.qty;
-            } else {
-                products.push({
-                    id: Date.now() + Math.random(),
-                    name: orderItem.name,
-                    price: 0,
-                    stock: orderItem.qty,
-                    category: 'Abarrotes',
-                    img: DEFAULT_PRODUCT_IMAGE,
-                    salesCount: 0
-                });
+            const p = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
+            if(p) {
+                if (!p.batches) p.batches = [];
+                p.batches.push({ qty: orderItem.qty, dueDate: orderItem.expiry });
+                
+                // Recalcular stock y fecha de vencimiento
+                p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
+                const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
+                if (activeDates.length > 0) {
+                    activeDates.sort();
+                    p.dueDate = activeDates[0];
+                } else {
+                    p.dueDate = orderItem.expiry || p.dueDate;
+                }
             }
         });
 
-        saveProducts(products);
+        saveProducts(products); // Actualiza localStorage
 
+        // Guardar en el historial de proveedores
         const providerName = document.getElementById('provider-name').value;
         const date = document.getElementById('provider-date').value || new Date().toISOString().split('T')[0];
         const providerHistory = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
@@ -867,12 +981,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert('Orden Registrada Exitosamente en el inventario.');
         
+        // Limpiamos todo
         currentProviderOrder = [];
         renderProviderOrder();
-        e.target.reset();
+        e.target.reset(); // Botón form reset
         updateDashboard();
         checkNotifications();
         updateReportsSummary();
+        renderProvidersListInReports();
     });
 
     // === REPORTES PDF ===
@@ -1267,6 +1383,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ordersTotalElement) ordersTotalElement.innerText = `S/. ${activeOrdersTotal.toFixed(2)}`;
     };
 
+    // === RENDERIZADO DINÁMICO DE LA LISTA DE PROVEEDORES EN REPORTES ===
+    window.renderProvidersListInReports = function() {
+        const tbody = document.getElementById('reports-providers-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        const products = getProducts();
+        
+        // Agrupar gastos por proveedor único
+        const providersMap = {};
+        orders.forEach(order => {
+            const name = order.providerName ? order.providerName.trim() : 'N/A';
+            if (!providersMap[name]) {
+                providersMap[name] = {
+                    name: name,
+                    categories: new Set(),
+                    totalGasto: 0
+                };
+            }
+            providersMap[name].totalGasto += order.total;
+            
+            // Buscar categorías de los productos involucrados
+            order.items.forEach(item => {
+                const matchedProduct = products.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+                if (matchedProduct && matchedProduct.category) {
+                    providersMap[name].categories.add(matchedProduct.category);
+                } else {
+                    providersMap[name].categories.add('Abarrotes');
+                }
+            });
+        });
+        
+        const providersList = Object.values(providersMap);
+        if (providersList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="py-4 px-6 text-center text-slate-400 text-sm">No hay proveedores registrados aún.</td></tr>`;
+            return;
+        }
+        
+        providersList.forEach(prov => {
+            const catsStr = Array.from(prov.categories).join(', ') || 'General';
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-slate-50 hover:bg-surface-container-low transition-colors';
+            tr.innerHTML = `
+                <td class="py-4 px-6 font-semibold">${prov.name}</td>
+                <td class="py-4 px-6 text-sm">${catsStr}</td>
+                <td class="py-4 px-6 text-right font-headline font-bold">S/. ${prov.totalGasto.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
 
     // === ARCHIVADO DE REPORTES SEMANALES ===
     window.archiveWeeklyData = function() {
@@ -1303,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Refrescar UI
                 updateReportsSummary();
+                renderProvidersListInReports();
             }
         }
     };
@@ -1334,12 +1502,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Inicializar renders e interfaces al cargar
+    updateCategoryDatalist();
     renderInventory();
     renderFrequentProducts();
     renderCart();
     updateDashboard();
     checkNotifications();
     updateReportsSummary();
+    renderProvidersListInReports();
     checkSundayResetAndDownload();
 
     // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
