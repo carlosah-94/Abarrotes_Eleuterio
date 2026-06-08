@@ -12,70 +12,141 @@ document.addEventListener('DOMContentLoaded', () => {
         'reportes': document.getElementById('app-reportes'),
         'proveedores': document.getElementById('app-proveedores')
     };
-        // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+
+    // Imagen por defecto en formato SVG Data URL (Elegante, autocompletada y sin comillas dobles internas para evitar conflictos en HTML)
+    const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><g fill='none' stroke='%2394a3b8' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M60 80h80v70a10 10 0 0 1-10 10H70a10 10 0 0 1-10-10V80z'/><path d='M85 80V60a15 15 0 0 1 30 0v20'/></g><text x='100' y='170' font-family='system-ui, sans-serif' font-size='13' font-weight='600' fill='%2364748b' text-anchor='middle'>Sin Imagen</text></svg>";
+
+    // Función auxiliar para obtener la imagen correcta de un producto
+    function getProductImage(p) {
+        const oldMilkImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54';
+        if (!p.img || (p.img === oldMilkImage && !p.name.toLowerCase().includes('leche'))) {
+            return DEFAULT_PRODUCT_IMAGE;
+        }
+        return p.img;
+    }
+
+    // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
     function normalizeText(text) {
         if (!text) return '';
         return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    // Convertidor de números a letras en español (Soles peruanos)
+    function numberToLetters(num) {
+        const units = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+        const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+        const twenties = ['VEINTE', 'VEINTIUNO', 'VEINTIDOS', 'VEINTITRES', 'VEINTICUATRO', 'VEINTICINCO', 'VEINTISEIS', 'VEINTISIETE', 'VEINTIOCHO', 'VEINTINUEVE'];
+        const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SIETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+        function convertGroup(n) {
+            if (n === 100) return 'CIEN';
+            let output = '';
+            let h = Math.floor(n / 100);
+            let r = n % 100;
+            if (h > 0) output += hundreds[h] + ' ';
+            if (r > 0) {
+                if (r < 10) output += units[r];
+                else if (r < 20) output += teens[r - 10];
+                else if (r < 30) output += twenties[r - 20];
+                else {
+                    let t = Math.floor(r / 10);
+                    let u = r % 10;
+                    output += tens[t];
+                    if (u > 0) output += ' Y ' + units[u];
+                }
+            }
+            return output.trim();
+        }
+
+        const integerPart = Math.floor(num);
+        const decimalPart = Math.round((num - integerPart) * 100);
+        const decimalStr = String(decimalPart).padStart(2, '0') + '/100 SOLES';
+
+        if (integerPart === 0) return 'CERO Y ' + decimalStr;
+
+        let result = '';
+        let thousands = Math.floor(integerPart / 1000);
+        let remainder = integerPart % 1000;
+
+        if (thousands > 0) {
+            if (thousands === 1) result += 'MIL ';
+            else result += convertGroup(thousands) + ' MIL ';
+        }
+        if (remainder > 0) {
+            result += convertGroup(remainder) + ' ';
+        }
+
+        return (result.trim() + ' CON ' + decimalStr).toUpperCase();
     }
 
     // Inicializar los datos de LocalStorage
     function initData() {
         if (!localStorage.getItem('products')) {
             const initialProducts = [
-                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U' },
-                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh' },
-                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54' },
-                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL' },
-                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1mh0Jx1RSSNoJX9cfmnxHdhJ5uuyS-SUH3G-1UTH397BNLUEXm8fv1lwLOBOGhzwlNePQoEmitg7KzSvNU32xu0pSA3J1utH_08B387W1zKcRrnNv7jJpIx7o0XQWKNtVHrXOlBwWZC9XI9E0Ho7D152uBg1qEcKXeXmYp4sBPjLa8Wij0_JKcvxIsn4WHOUk5CvgI6DqgeSK0kMR5Mbs4AkISLLl4cgCiL2mXi_gUYKSxSgwDreIfjtuBfx5DNCRdN9LpxkICK1B' },
-                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC1mh0Jx1RSSNoJX9cfmnxHdhJ5uuyS-SUH3G-1UTH397BNLUEXm8fv1lwLOBOGhzwlNePQoEmitg7KzSvNU32xu0pSA3J1utH_08B387W1zKcRrnNv7jJpIx7o0XQWKNtVHrXOlBwWZC9XI9E0Ho7D152uBg1qEcKXeXmYp4sBPjLa8Wij0_JKcvxIsn4WHOUk5CvgI6DqgeSK0kMR5Mbs4AkISLLl4cgCiL2mXi_gUYKSxSgwDreIfjtuBfx5DNCRdN9LpxkICK1B' }
+                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', salesCount: 0 },
+                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', salesCount: 0 },
+                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', salesCount: 0 },
+                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', salesCount: 0 },
+                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, salesCount: 0 },
+                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, salesCount: 0 }
             ];
             localStorage.setItem('products', JSON.stringify(initialProducts));
         }
         if (!localStorage.getItem('cart')) {
             localStorage.setItem('cart', JSON.stringify([]));
         }
+        if (!localStorage.getItem('salesHistory')) {
+            localStorage.setItem('salesHistory', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('providerOrdersHistory')) {
+            localStorage.setItem('providerOrdersHistory', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('dismissedNotifications')) {
+            localStorage.setItem('dismissedNotifications', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('lastResetSunday')) {
+            localStorage.setItem('lastResetSunday', '');
+        }
     }
     
     initData();
 
-// Imagen por defecto en formato SVG Data URL (Elegante, autocompletada y sin comillas dobles internas para evitar conflictos en HTML)
-const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><g fill='none' stroke='%2394a3b8' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M60 80h80v70a10 10 0 0 1-10 10H70a10 10 0 0 1-10-10V80z'/><path d='M85 80V60a15 15 0 0 1 30 0v20'/></g><text x='100' y='170' font-family='system-ui, sans-serif' font-size='13' font-weight='600' fill='%2364748b' text-anchor='middle'>Sin Imagen</text></svg>";
-
-// Función auxiliar para obtener la imagen correcta de un producto
-function getProductImage(p) {
-    const oldMilkImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54';
-    if (!p.img || (p.img === oldMilkImage && !p.name.toLowerCase().includes('leche'))) {
-        return DEFAULT_PRODUCT_IMAGE;
-    }
-    return p.img;
-}
-
-// Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
-function normalizeText(text) {
-    if (!text) return '';
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
     // Acceso a datos
     function getProducts() {
-        return JSON.parse(localStorage.getItem('products')) || [];
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+        let updated = false;
+        products.forEach(p => {
+            if (p.salesCount === undefined) {
+                p.salesCount = 0;
+                updated = true;
+            }
+        });
+        if (updated) {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+        return products;
     }
-function saveProducts(products) {
+
+    function saveProducts(products) {
         localStorage.setItem('products', JSON.stringify(products));
         renderInventory();
         renderFrequentProducts();
         updateProviderDatalist();
-        updateCategoryDatalist();
-        updateDashboard(); 
+        updateDashboard();
         checkNotifications();
-        checkNotifications();  
-    }    function getCart() {
+    }
+
+    function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
     }
+
     function saveCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
         renderCart();
     }
-        // Mostrar/ocultar contraseña en el login
+
+    // Mostrar/ocultar contraseña en el login
     const loginToggleBtn = document.getElementById('login-toggle-password');
     const loginPasswordInput = document.getElementById('login-password');
     if (loginToggleBtn && loginPasswordInput) {
@@ -148,6 +219,7 @@ function saveProducts(products) {
         });
 
         // Refrescar data según vista
+        if (viewName === 'dashboard') updateDashboard();
         if (viewName === 'inventario') renderInventory();
         if (viewName === 'ventas') {
             renderFrequentProducts();
@@ -155,6 +227,9 @@ function saveProducts(products) {
         }
         if (viewName === 'proveedores') {
             updateProviderDatalist();
+        }
+        if (viewName === 'reportes') {
+            updateReportsSummary();
         }
     };
 
@@ -171,6 +246,29 @@ function saveProducts(products) {
         }
     };
 
+    // Toggle para notificaciones
+    window.toggleNotifications = function(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        const modal = document.getElementById('modal-notifications');
+        if (modal) {
+            modal.classList.toggle('hidden');
+        }
+    };
+
+    // Cerrar notificaciones al hacer click fuera
+    document.addEventListener('click', (e) => {
+        const modal = document.getElementById('modal-notifications');
+        if (modal && !modal.classList.contains('hidden')) {
+            const modalContent = modal.querySelector('.pointer-events-auto');
+            const bellBtn = document.querySelector('[onclick="toggleNotifications(event)"]');
+            if (modalContent && !modalContent.contains(e.target) && (!bellBtn || !bellBtn.contains(e.target))) {
+                modal.classList.add('hidden');
+            }
+        }
+    });
+
     // === INVENTARIO Y PAGINACION ===
     let currentPage = 1;
     const itemsPerPage = 5;
@@ -179,14 +277,15 @@ function saveProducts(products) {
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            currentSearchTerm = e.target.value.toLowerCase();
+            currentSearchTerm = e.target.value;
             currentPage = 1;
             renderInventory();
             renderFrequentProducts();
         });
     }
 
-        window.renderInventory = function() {
+
+    window.renderInventory = function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
         
@@ -232,19 +331,21 @@ function saveProducts(products) {
         tableBody.innerHTML = '';
         
         productsToRender.forEach(p => {
-            const stockClass = p.stock < 10 ? 'text-error' : '';
-            const catColor = p.category === 'Lácteos' ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
+            const stockClass = p.stock <= 10 ? 'text-error' : '';
+            const catColor = normalizeText(p.category).includes('lacteo') ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
             
-            // Lógica de fecha vencimiento
+            // Lógica de fecha vencimiento (Rojo si venció, Naranja si vence en <= 30 días)
             let dateClass = 'text-on-surface';
             let dateStr = 'N/A';
             if (p.dueDate) {
                 dateStr = p.dueDate;
                 const today = new Date();
+                today.setHours(0,0,0,0);
                 const due = new Date(p.dueDate);
+                due.setHours(0,0,0,0);
                 const diffTime = due - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays <= 0) dateClass = 'text-error font-bold';
+                if (diffDays <= 0) dateClass = 'text-error font-bold text-red-600';
                 else if (diffDays <= 30) dateClass = 'text-orange-600 font-bold';
             }
 
@@ -342,11 +443,12 @@ function saveProducts(products) {
             stock: parseInt(document.getElementById('add-product-stock').value, 10),
             dueDate: document.getElementById('add-product-date').value,
             category: categorySelect.options[categorySelect.selectedIndex].text,
-            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54'
+            img: DEFAULT_PRODUCT_IMAGE,
+            salesCount: 0
         };
         
         products.push(newProduct);
-        saveProducts(products); // Renderiza autom.
+        saveProducts(products);
         
         e.target.reset();
         closeModal('modal-add-product');
@@ -453,7 +555,6 @@ function saveProducts(products) {
                  item.qty = newQty;
             } else if (newQty <= 0) {
                  cart = cart.filter(c => c.id !== id);
-
             }
         }
         saveCart(cart);
@@ -504,21 +605,156 @@ function saveProducts(products) {
              return;
         }
         
-        // Reducir stock del inventario
         const products = getProducts();
         
         cart.forEach(cartItem => {
              const prodIdx = products.findIndex(p => p.id === cartItem.id);
              if(prodIdx !== -1) {
                   products[prodIdx].stock -= cartItem.qty;
+                  products[prodIdx].salesCount = (products[prodIdx].salesCount || 0) + cartItem.qty;
              }
         });
         
-        saveProducts(products); // Guarda inventario actualizado
-        saveCart([]); // Limpia el carrito
+        saveProducts(products);
         
-        alert('Venta finalizada exitosamente.\nSe ha descontado del inventario.');
+        const salesHistory = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        const saleRecord = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            items: cart.map(item => ({ id: item.id, name: item.name, price: item.price, qty: item.qty })),
+            total: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
+            archived: false
+        };
+        salesHistory.push(saleRecord);
+        localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+        localStorage.setItem('lastSale', JSON.stringify(saleRecord));
+        
+        saveCart([]);
+        
+        alert('Venta finalizada exitosamente.\nSe ha descontado del inventario y registrado en el historial.');
+        updateDashboard();
+        checkNotifications();
+        updateReportsSummary();
     });
+
+    // Descargar Comprobante PDF (Boleta Térmica de 80mm mejorada según imagen)
+    const btnReceipt = document.getElementById('btn-download-receipt');
+    if (btnReceipt) {
+        btnReceipt.addEventListener('click', () => {
+            const lastSale = JSON.parse(localStorage.getItem('lastSale'));
+            if (!lastSale) {
+                alert('No hay ninguna venta reciente para descargar comprobante.');
+                return;
+            }
+            generateReceiptPDF(lastSale);
+        });
+    }
+
+    function generateReceiptPDF(sale) {
+        const { jsPDF } = window.jspdf;
+        const itemsCount = sale.items.length;
+        // Altura dinámica: header + items + pie
+        const receiptHeight = 85 + (itemsCount * 6) + 55;
+        
+        const doc = new jsPDF({
+            unit: 'mm',
+            format: [80, Math.max(120, receiptHeight)]
+        });
+        
+        // --- 1. DIBUJAR QR PLACEHOLDER ---
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0);
+        doc.rect(28, 5, 24, 24); // Centrado en la cinta de 80mm
+        
+        // Patrones mock del QR
+        doc.setFillColor(0);
+        doc.rect(30, 7, 6, 6, "F");
+        doc.rect(44, 7, 6, 6, "F");
+        doc.rect(30, 21, 6, 6, "F");
+        doc.rect(38, 15, 4, 4, "F");
+        doc.rect(45, 22, 4, 4, "F");
+        
+        // --- 2. CABECERA DE LA TIENDA ---
+        doc.setFont("courier", "bold");
+        doc.setFontSize(11);
+        doc.text("ABARROTES ELEUTERIO", 40, 34, { align: "center" });
+        
+        doc.setFont("courier", "normal");
+        doc.setFontSize(7.5);
+        doc.text("Sector 6, Grupo 5-A, Mz. k, lote 24", 40, 38, { align: "center" });
+        doc.text("LIMA - LIMA - VILLA EL SALVADOR", 40, 42, { align: "center" });
+        doc.text("RUC: 10089803361", 40, 46, { align: "center" });
+        
+        doc.setFont("courier", "bold");
+        doc.text("BOLETA DE VENTA ELECTRONICA", 40, 51, { align: "center" });
+        
+        // Boleta ID (basado en los últimos 6 dígitos del ID)
+        const ticketNum = String(sale.id).substring(String(sale.id).length - 6);
+        doc.text(`B002-${ticketNum}`, 40, 55, { align: "center" });
+        
+        doc.setFont("courier", "normal");
+        const saleDate = new Date(sale.date);
+        doc.text(`FECHA EMISION: ${saleDate.toLocaleDateString()}`, 5, 60);
+        
+        doc.text("=====================================", 40, 64, { align: "center" });
+        doc.text("UDS DESCRIPCION          P.U.  IMPORTE", 5, 68);
+        doc.text("=====================================", 40, 72, { align: "center" });
+        
+        // --- 3. ITEMS DE LA COMPRA ---
+        let y = 76;
+        sale.items.forEach(item => {
+            const qtyStr = String(item.qty).padEnd(3, ' ');
+            const nameStr = item.name.substring(0, 15).padEnd(16, ' ');
+            const puStr = parseFloat(item.price).toFixed(2).padStart(8, ' ');
+            const totalStr = (item.price * item.qty).toFixed(2).padStart(11, ' ');
+            doc.text(`${qtyStr}${nameStr}${puStr}${totalStr}`, 5, y);
+            y += 6;
+        });
+        
+        doc.text("=====================================", 40, y, { align: "center" });
+        y += 5;
+        
+        // --- 4. TOTALES (Con desglose de IGV peruano incluido) ---
+        const baseImponible = sale.total / 1.18;
+        const igv = sale.total - baseImponible;
+        
+        doc.text(`BASE IMPONIBLE : S/. ${baseImponible.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 5;
+        doc.text(`IGV (18%)      : S/. ${igv.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 5;
+        doc.text("=====================================", 40, y, { align: "center" });
+        y += 5;
+        
+        doc.setFont("courier", "bold");
+        doc.text(`TOTAL S/       : S/. ${sale.total.toFixed(2).padStart(8, ' ')}`, 15, y);
+        y += 7;
+        
+        // --- 5. MONTO EN LETRAS ---
+        doc.setFont("courier", "normal");
+        doc.setFontSize(7);
+        const letters = numberToLetters(sale.total);
+        const splitLetters = doc.splitTextToSize(letters, 70);
+        splitLetters.forEach(line => {
+            doc.text(line, 5, y);
+            y += 4;
+        });
+        
+        // --- 6. PIE DE PÁGINA ---
+        y += 2;
+        doc.text("Condición: Contado", 5, y);
+        y += 4;
+        const printDate = new Date();
+        const printDateStr = `${printDate.toLocaleDateString()} ${printDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        doc.text(`Impresión: ${printDateStr}`, 5, y);
+        
+        y += 6;
+        doc.setFontSize(6.5);
+        doc.text("Representación del Comprobante Electrónico, ingrese a:", 40, y, { align: "center" });
+        y += 4;
+        doc.text("www.abaroteseleuterio.com/cpe/comprobante", 40, y, { align: "center" });
+        
+        doc.save(`boleta_${sale.id}.pdf`);
+    }
  
     // === LÓGICA DE PROVEEDORES ===
     let currentProviderOrder = [];
@@ -577,7 +813,6 @@ function saveProducts(products) {
         currentProviderOrder.push({ name, qty, cost });
         renderProviderOrder();
 
-        // Limpiar inputs del producto
         inputName.value = '';
         inputQty.value = '';
         inputCost.value = '';
@@ -597,54 +832,242 @@ function saveProducts(products) {
 
         const products = getProducts();
         
-        // Sumar stock si el producto existe
         currentProviderOrder.forEach(orderItem => {
             const existing = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
             if(existing) {
                 existing.stock += orderItem.qty;
             } else {
-                // Producto nuevo, lo agregamos al inventario por defecto
                 products.push({
                     id: Date.now() + Math.random(),
                     name: orderItem.name,
-                    price: 0, // Precio de venta 0 por defecto si no lo tenian registrado
+                    price: 0,
                     stock: orderItem.qty,
                     category: 'Abarrotes',
-                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U'
+                    img: DEFAULT_PRODUCT_IMAGE,
+                    salesCount: 0
                 });
             }
         });
 
-        saveProducts(products); // Actualiza localStorage
+        saveProducts(products);
+
+        const providerName = document.getElementById('provider-name').value;
+        const date = document.getElementById('provider-date').value || new Date().toISOString().split('T')[0];
+        const providerHistory = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        
+        providerHistory.push({
+            id: Date.now(),
+            providerName,
+            date,
+            items: [...currentProviderOrder],
+            total: currentProviderOrder.reduce((sum, item) => sum + item.cost, 0),
+            archived: false
+        });
+        localStorage.setItem('providerOrdersHistory', JSON.stringify(providerHistory));
 
         alert('Orden Registrada Exitosamente en el inventario.');
         
-        // Limpiamos todo
         currentProviderOrder = [];
         renderProviderOrder();
-        e.target.reset(); // Botón form reset
+        e.target.reset();
+        updateDashboard();
+        checkNotifications();
+        updateReportsSummary();
     });
 
-
-    // Validar Formularios - Simular navegación
-    document.querySelectorAll('form').forEach(form => {
-        if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
-        
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if(submitBtn) {
-                const text = submitBtn.innerText.toLowerCase();
-                if (text.includes('acceder') || text.includes('crear')) {
-                    navigateTo('main');
-                } else if (text.includes('registrar orden') || text.includes('finalizar')) {
-                    alert('Operación procesada con éxito.');
-                }
-            }
+    // === REPORTES PDF ===
+    const btnSalesPdf = document.getElementById('btn-report-sales-pdf');
+    if (btnSalesPdf) {
+        btnSalesPdf.addEventListener('click', () => {
+            generateSalesWeeklyReportPDF();
         });
-    });
+    }
 
-    // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En vivo y domingos) ===
+    const btnProvidersPdf = document.getElementById('btn-report-providers-pdf');
+    if (btnProvidersPdf) {
+        btnProvidersPdf.addEventListener('click', () => {
+            generateProvidersExpensesReportPDF();
+        });
+    }
+
+    function generateSalesWeeklyReportPDF(isAuto = false) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        
+        // Filtrar SOLO ventas activas (no archivadas)
+        const activeSales = sales.filter(s => !s.archived);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 83, 91); // Color primario
+        doc.text("Reporte Semanal de Ventas", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0, 83, 91);
+        doc.line(20, 36, 190, 36);
+        
+        // Tarjetas
+        doc.setFillColor(240, 244, 248);
+        doc.rect(20, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 83, 91);
+        doc.text("TOTAL VENDIDO", 25, 48);
+        const totalAmount = activeSales.reduce((sum, s) => sum + s.total, 0);
+        doc.setFontSize(16);
+        doc.text(`S/. ${totalAmount.toFixed(2)}`, 25, 60);
+        
+        doc.setFillColor(240, 244, 248);
+        doc.rect(110, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 83, 91);
+        doc.text("TRANSACCIONES", 115, 48);
+        doc.setFontSize(16);
+        doc.text(`${activeSales.length} ventas`, 115, 60);
+        
+        // Tabla
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50);
+        doc.text("Detalle de Ventas del Periodo", 20, 80);
+        
+        doc.setFontSize(10);
+        doc.text("Fecha y Hora", 20, 88);
+        doc.text("Código Boleta", 70, 88);
+        doc.text("Productos Vendidos", 110, 88);
+        doc.text("Total", 170, 88);
+        
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(200);
+        doc.line(20, 91, 190, 91);
+        
+        doc.setFont("helvetica", "normal");
+        let y = 97;
+        activeSales.slice(-20).forEach(sale => {
+            const dateStr = new Date(sale.date).toLocaleString();
+            const itemsText = sale.items.map(item => `${item.qty}x ${item.name}`).join(", ");
+            const splitItems = doc.splitTextToSize(itemsText, 55); // 55mm de ancho para envolver
+            
+            const linesCount = splitItems.length;
+            const rowHeight = Math.max(8, linesCount * 5);
+            
+            if (y + rowHeight > 280) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.text(dateStr, 20, y);
+            doc.text(`TKT-${sale.id}`, 70, y);
+            
+            // Imprimir texto multilínea
+            for (let i = 0; i < linesCount; i++) {
+                doc.text(splitItems[i], 110, y + (i * 5));
+            }
+            
+            doc.text(`S/. ${sale.total.toFixed(2)}`, 170, y);
+            y += rowHeight + 3;
+        });
+        
+        doc.save(`reporte_ventas_semanal_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+    }
+
+    function generateProvidersExpensesReportPDF(isAuto = false) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        
+        // Filtrar SOLO órdenes activas (no archivadas)
+        const activeOrders = orders.filter(o => !o.archived);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(43, 100, 133); // Color secundario
+        doc.text("Reporte de Gastos con Proveedores", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(43, 100, 133);
+        doc.line(20, 36, 190, 36);
+        
+        // Tarjetas
+        doc.setFillColor(240, 244, 248);
+        doc.rect(20, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(43, 100, 133);
+        doc.text("TOTAL INVERTIDO", 25, 48);
+        const totalExpenses = activeOrders.reduce((sum, o) => sum + o.total, 0);
+        doc.setFontSize(16);
+        doc.text(`S/. ${totalExpenses.toFixed(2)}`, 25, 60);
+        
+        doc.setFillColor(240, 244, 248);
+        doc.rect(110, 42, 80, 25, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(43, 100, 133);
+        doc.text("REABASTECIMIENTOS", 115, 48);
+        doc.setFontSize(16);
+        doc.text(`${activeOrders.length} órdenes`, 115, 60);
+        
+        // Tabla
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50);
+        doc.text("Detalle de Órdenes a Proveedores", 20, 80);
+        
+        doc.setFontSize(10);
+        doc.text("Fecha", 20, 88);
+        doc.text("Proveedor", 50, 88);
+        doc.text("Detalle de Lotes Recibidos (Vencimiento)", 90, 88);
+        doc.text("Costo Total", 170, 88);
+        
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(200);
+        doc.line(20, 91, 190, 91);
+        
+        doc.setFont("helvetica", "normal");
+        let y = 97;
+        activeOrders.forEach(order => {
+            const itemsText = order.items.map(item => `${item.qty}x ${item.name} (Vence: ${item.expiry || 'N/A'})`).join(", ");
+            const splitItems = doc.splitTextToSize(itemsText, 75); // 75mm de ancho para envolver
+            
+            const linesCount = splitItems.length;
+            const rowHeight = Math.max(8, linesCount * 5);
+            
+            if (y + rowHeight > 280) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.text(order.date, 20, y);
+            doc.text(order.providerName || 'N/A', 50, y);
+            
+            // Imprimir texto multilínea
+            for (let i = 0; i < linesCount; i++) {
+                doc.text(splitItems[i], 90, y + (i * 5));
+            }
+            
+            doc.text(`S/. ${order.total.toFixed(2)}`, 170, y);
+            y += rowHeight + 3;
+        });
+        
+        doc.save(`reporte_proveedores_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+    }
+
+    // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En tiempo real y domingos) ===
     window.checkNotifications = function() {
         const products = getProducts();
         const today = new Date();
@@ -805,6 +1228,102 @@ function saveProducts(products) {
         checkNotifications();
     };
 
+    // === PANEL DE CONTROL / DASHBOARD FUNCIONAL ===
+    window.updateDashboard = function() {
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        const products = getProducts();
+        
+        const startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        
+        // Ventas del día actual (se resetea automáticamente al iniciar el nuevo día)
+        const salesToday = sales
+            .filter(s => new Date(s.date) >= startOfToday)
+            .reduce((sum, s) => sum + s.total, 0);
+            
+        // Productos con bajo stock
+        const lowStockCount = products.filter(p => p.stock <= 10).length;
+        
+        const salesValElement = document.getElementById('dashboard-sales-today');
+        const lowStockElement = document.getElementById('dashboard-low-stock-count');
+        
+        if (salesValElement) salesValElement.innerText = salesToday.toFixed(2);
+        if (lowStockElement) lowStockElement.innerText = lowStockCount;
+    };
+
+    // === RESUMEN GENERAL DE REPORTES (Ventas activas y Compras activas) ===
+    window.updateReportsSummary = function() {
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        
+        // Sumar sólo lo que no se ha archivado el domingo
+        const activeSalesTotal = sales.filter(s => !s.archived).reduce((sum, s) => sum + s.total, 0);
+        const activeOrdersTotal = orders.filter(o => !o.archived).reduce((sum, o) => sum + o.total, 0);
+        
+        const salesTotalElement = document.getElementById('reports-sales-total');
+        const ordersTotalElement = document.getElementById('reports-providers-total');
+        
+        if (salesTotalElement) salesTotalElement.innerText = `S/. ${activeSalesTotal.toFixed(2)}`;
+        if (ordersTotalElement) ordersTotalElement.innerText = `S/. ${activeOrdersTotal.toFixed(2)}`;
+    };
+
+
+    // === ARCHIVADO DE REPORTES SEMANALES ===
+    window.archiveWeeklyData = function() {
+        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
+        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
+        
+        sales.forEach(s => s.archived = true);
+        orders.forEach(o => o.archived = true);
+        
+        localStorage.setItem('salesHistory', JSON.stringify(sales));
+        localStorage.setItem('providerOrdersHistory', JSON.stringify(orders));
+    };
+
+    // === CHEQUEO DE RESET DOMINICAL AUTOMÁTICO ===
+    window.checkSundayResetAndDownload = function() {
+        const today = new Date();
+        const day = today.getDay(); // 0 es Domingo
+        
+        if (day === 0) {
+            const todaySundayStr = today.toISOString().split('T')[0];
+            const lastResetSunday = localStorage.getItem('lastResetSunday');
+            
+            // Si es domingo y hoy no se ha realizado el reset automático
+            if (lastResetSunday !== todaySundayStr) {
+                // Descargar PDFs automáticos de la semana acumulada
+                generateSalesWeeklyReportPDF(true);
+                generateProvidersExpensesReportPDF(true);
+                
+                // Archivar la semana (pone los contadores acumulativos activos a 0)
+                archiveWeeklyData();
+                
+                localStorage.setItem('lastResetSunday', todaySundayStr);
+                alert('¡Atención! Hoy es Domingo. Se han descargado y archivado tus reportes de la semana.');
+                
+                // Refrescar UI
+                updateReportsSummary();
+            }
+        }
+    };
+
+    // Validar Formularios - Simular navegación
+    document.querySelectorAll('form').forEach(form => {
+        if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if(submitBtn) {
+                const text = submitBtn.innerText.toLowerCase();
+                if (text.includes('acceder') || text.includes('crear')) {
+                    navigateTo('main');
+                } else if (text.includes('registrar orden') || text.includes('finalizar')) {
+                    alert('Operación procesada con éxito.');
+                }
+            }
+        });
+    });
 
     // Logout
     document.querySelectorAll('[data-action="logout"]').forEach(btn => {
@@ -814,23 +1333,18 @@ function saveProducts(products) {
          });
     });
 
-// Inicializar renders e interfaces al cargar
-    updateCategoryDatalist();
+    // Inicializar renders e interfaces al cargar
     renderInventory();
     renderFrequentProducts();
     renderCart();
     updateDashboard();
     checkNotifications();
     updateReportsSummary();
-    renderProvidersListInReports();
     checkSundayResetAndDownload();
-    resetDailyCounters(); 
 
     // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
     setInterval(() => {
         updateDashboard();
         checkSundayResetAndDownload();
-        resetDailyCounters(); // <--- AGREGAR ESTA LÍNEA
     }, 30000);
 });
-
