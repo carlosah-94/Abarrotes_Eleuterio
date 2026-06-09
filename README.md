@@ -36,7 +36,7 @@ Durante el Sprint 3, se implementaron diversas mejoras funcionales y de experien
 - **Generación de Comprobantes:** Exportación de boletas de venta en formato "ticket" optimizado para impresión térmica (mediante jsPDF).
 - **Reportes Automatizados:** Generación y descarga automática de reportes PDF (Ventas Semanales y Gastos de Proveedores) todos los domingos a medianoche.
 - **Dashboard Dinámico:** Tarjetas funcionales de resumen (Ventas del día, Stock Crítico) con reseteo automático a medianoche.
-
+- **Ultimas correciones:** Se soluciono la enredadera de las ramas que fueron unidas por accidente a la rama main, ahora apuntan a la rama develop, visualizando los cambios.
 
 ## Equipo de Desarrollo
 - **Connery Diaz** - Product Owner
