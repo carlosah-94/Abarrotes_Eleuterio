@@ -1,0 +1,43 @@
+name: CI - Abarrotes Eleuterio
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  verificar-proyecto:
+    name: Verificar que el proyecto funciona
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Verificar sintaxis de server.js
+        run: node --check server.js
+
+      - name: Verificar sintaxis de archivos backend
+        run: |
+          for file in $(find src -name "*.js" 2>/dev/null); do
+            echo "Verificando: $file"
+            node --check "$file"
+          done
+
+      - name: Ejecutar tests
+        run: npm test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY || 'placeholder-key' }}
+          JWT_SECRET: ci-test-secret-key-no-production
+          PORT: 3000
