@@ -38,6 +38,21 @@ Durante el Sprint 3, se implementaron diversas mejoras funcionales y de experien
 - **Dashboard Dinámico:** Tarjetas funcionales de resumen (Ventas del día, Stock Crítico) con reseteo automático a medianoche.
 - **Ultimas correciones:** Se soluciono la enredadera de las ramas que fueron unidas por accidente a la rama main, ahora apuntan a la rama develop, visualizando los cambios.
 
+## Configuración de Base de Datos (Sprint 4)
+
+El proyecto utiliza **PostgreSQL** a través de **Supabase** como base de datos.
+
+### Pasos para configurar:
+
+1. Solicita al equipo las credenciales de Supabase (URL y Service Key)
+2. Copia el archivo de ejemplo: `copy .env.example .env` (Windows) o `cp .env.example .env` (Mac/Linux)
+3. Abre el archivo `.env` y rellena los valores reales:
+   - `SUPABASE_URL` — URL del proyecto Supabase
+   - `SUPABASE_SERVICE_KEY` — Service Role Key de Supabase
+   - `JWT_SECRET` — Clave secreta para tokens JWT (cualquier texto largo y aleatorio)
+4. Instala las dependencias: `npm install`
+5. Ejecuta el servidor: `npm run dev`
+
 ## Equipo de Desarrollo
 - **Connery Diaz** - Product Owner
 - **Carlos Atahua** - Scrum Master
