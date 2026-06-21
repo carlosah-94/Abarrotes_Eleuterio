@@ -14,7 +14,6 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'La venta debe tener al menos un producto' });
         }
 
-        // Calcular totales
         let total = 0;
         for (const item of items) {
             total += item.precio_unitario * item.cantidad;
@@ -22,7 +21,6 @@ router.post('/', authMiddleware, async (req, res) => {
         const baseImponible = total / 1.18;
         const igv = total - baseImponible;
 
-        // Generar número de boleta
         const { data: ultimaBoleta } = await supabase
             .from('venta')
             .select('numero_boleta')
@@ -38,7 +36,6 @@ router.post('/', authMiddleware, async (req, res) => {
         }
         const numeroBoleta = 'B002-' + String(siguienteNum).padStart(6, '0');
 
-        // Insertar cabecera de venta
         const { data: venta, error: errorVenta } = await supabase
             .from('venta')
             .insert({
@@ -54,11 +51,9 @@ router.post('/', authMiddleware, async (req, res) => {
 
         if (errorVenta) throw errorVenta;
 
-        // Insertar items y descontar stock
         for (const item of items) {
             const subtotal = item.precio_unitario * item.cantidad;
 
-            // Insertar venta_item
             await supabase.from('venta_item').insert({
                 venta_id: venta.id,
                 producto_id: item.producto_id,
@@ -67,8 +62,7 @@ router.post('/', authMiddleware, async (req, res) => {
                 subtotal: parseFloat(subtotal.toFixed(2))
             });
 
-            // Descontar stock con FEFO
-            const { data: resultado, error: errorFefo } = await supabase
+            const { error: errorFefo } = await supabase
                 .rpc('descontar_stock_fefo', {
                     p_producto_id: item.producto_id,
                     p_cantidad: item.cantidad
@@ -79,8 +73,6 @@ router.post('/', authMiddleware, async (req, res) => {
                 throw new Error(`Error al descontar stock del producto ${item.producto_id}`);
             }
 
-            // Actualizar contador de ventas del producto
-            await supabase.rpc('', {}).then(() => {});
             const { data: prod } = await supabase
                 .from('producto')
                 .select('contador_ventas')
@@ -93,7 +85,6 @@ router.post('/', authMiddleware, async (req, res) => {
                 .eq('id', item.producto_id);
         }
 
-        // Devolver venta con items para el PDF
         const { data: ventaCompleta } = await supabase
             .from('venta')
             .select(`
@@ -136,7 +127,7 @@ router.get('/hoy', authMiddleware, async (req, res) => {
     }
 });
 
-// GET /api/ventas/semana — Ventas de la semana (no archivadas)
+// GET /api/ventas/semana — Ventas de la semana
 router.get('/semana', authMiddleware, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -154,7 +145,6 @@ router.get('/semana', authMiddleware, async (req, res) => {
 
         if (error) throw error;
 
-        // Calcular inicio de la semana (lunes)
         const hoy = new Date();
         const diaSemana = hoy.getDay();
         const inicioSemana = new Date(hoy);
