@@ -7,14 +7,12 @@ const authMiddleware = require('../middleware/auth');
 // GET /api/reportes/resumen — Resumen de ventas y gastos de la semana
 router.get('/resumen', authMiddleware, async (req, res) => {
     try {
-        // Inicio de la semana (lunes)
         const hoy = new Date();
         const diaSemana = hoy.getDay();
         const inicioSemana = new Date(hoy);
         inicioSemana.setDate(hoy.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
         inicioSemana.setHours(0, 0, 0, 0);
 
-        // Total ventas de la semana
         const { data: ventas } = await supabase
             .from('venta')
             .select('total')
@@ -22,7 +20,6 @@ router.get('/resumen', authMiddleware, async (req, res) => {
 
         const totalVentas = (ventas || []).reduce((sum, v) => sum + parseFloat(v.total), 0);
 
-        // Total gastos de proveedores de la semana
         const { data: ordenes } = await supabase
             .from('orden_proveedor')
             .select('costo_total')
@@ -129,7 +126,6 @@ router.get('/proveedores-mes', authMiddleware, async (req, res) => {
 
         if (error) throw error;
 
-        // Agrupar por proveedor
         const provMap = {};
         (ordenes || []).forEach(o => {
             const provNombre = o.proveedor ? o.proveedor.nombre_display : 'Desconocido';

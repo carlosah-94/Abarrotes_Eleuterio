@@ -34,7 +34,6 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Nombre del proveedor e items son requeridos' });
         }
 
-        // Buscar o crear proveedor
         const provNorm = normalizarTexto(nombre_proveedor);
         let { data: proveedor } = await supabase
             .from('proveedor')
@@ -55,10 +54,8 @@ router.post('/', authMiddleware, async (req, res) => {
             proveedor = nuevoProv;
         }
 
-        // Calcular costo total de la orden
         const costoTotal = items.reduce((sum, item) => sum + parseFloat(item.costo_total), 0);
 
-        // Crear orden
         const { data: orden, error: errOrden } = await supabase
             .from('orden_proveedor')
             .insert({
@@ -72,9 +69,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
         if (errOrden) throw errOrden;
 
-        // Procesar cada item
         for (const item of items) {
-            // Buscar producto por nombre
             const { data: producto } = await supabase
                 .from('producto')
                 .select('id, stock_actual')
@@ -88,7 +83,6 @@ router.post('/', authMiddleware, async (req, res) => {
                 });
             }
 
-            // Insertar item de orden
             await supabase.from('item_orden_proveedor').insert({
                 orden_id: orden.id,
                 producto_id: producto.id,
@@ -97,7 +91,6 @@ router.post('/', authMiddleware, async (req, res) => {
                 costo_total: parseFloat(item.costo_total)
             });
 
-            // Crear nuevo lote para el producto
             await supabase.from('lote_producto').insert({
                 producto_id: producto.id,
                 cantidad: item.cantidad_recibida,
@@ -105,7 +98,6 @@ router.post('/', authMiddleware, async (req, res) => {
                 costo_unitario: parseFloat(item.costo_total) / item.cantidad_recibida
             });
 
-            // Actualizar stock del producto
             await supabase
                 .from('producto')
                 .update({ stock_actual: producto.stock_actual + item.cantidad_recibida })

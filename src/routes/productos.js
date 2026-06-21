@@ -25,7 +25,6 @@ router.get('/', authMiddleware, async (req, res) => {
             .range(offset, offset + parseInt(limite) - 1);
 
         if (categoria) {
-            // Buscar la categoría por nombre
             const { data: cat } = await supabase
                 .from('categoria')
                 .select('id')
@@ -41,7 +40,6 @@ router.get('/', authMiddleware, async (req, res) => {
         const { data, error, count } = await query;
         if (error) throw error;
 
-        // Obtener fecha de vencimiento más próxima para cada producto
         const productosConVencimiento = await Promise.all(data.map(async (p) => {
             const { data: lotes } = await supabase
                 .from('lote_producto')
@@ -104,7 +102,6 @@ router.get('/frecuentes', authMiddleware, async (req, res) => {
 
         if (error) throw error;
 
-        // Obtener fecha de vencimiento para cada producto
         const productosConDatos = await Promise.all(data.map(async (p) => {
             const { data: lotes } = await supabase
                 .from('lote_producto')
@@ -144,14 +141,12 @@ router.get('/alertas', authMiddleware, async (req, res) => {
         hoy.setHours(0, 0, 0, 0);
 
         for (const p of productos) {
-            // Alerta de stock
             if (p.stock_actual === 0) {
                 alertas.push({ tipo: 'error', titulo: 'Agotado', mensaje: `"${p.nombre}" sin stock.`, productoId: p.id });
             } else if (p.stock_actual <= p.stock_minimo) {
                 alertas.push({ tipo: 'warning', titulo: 'Bajo Stock', mensaje: `"${p.nombre}" tiene stock bajo (${p.stock_actual}).`, productoId: p.id });
             }
 
-            // Alerta de vencimiento
             const { data: lotes } = await supabase
                 .from('lote_producto')
                 .select('fecha_venc')
@@ -190,7 +185,6 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Nombre, precio, stock inicial y categoría son requeridos' });
         }
 
-        // Crear categoría si no existe
         const catNorm = normalizarTexto(categoria);
         let { data: catExistente } = await supabase
             .from('categoria')
@@ -208,10 +202,8 @@ router.post('/', authMiddleware, async (req, res) => {
             catExistente = nuevaCat;
         }
 
-        // Buscar imagen por nombre de producto en la carpeta de imágenes
         const imagenUrl = `/img/productos/${normalizarTexto(nombre).replace(/\s+/g, '_')}.webp`;
 
-        // Crear producto
         const { data: producto, error } = await supabase
             .from('producto')
             .insert({
@@ -229,7 +221,6 @@ router.post('/', authMiddleware, async (req, res) => {
 
         if (error) throw error;
 
-        // Crear lote inicial
         if (parseInt(stock_inicial) > 0) {
             await supabase
                 .from('lote_producto')
@@ -255,9 +246,8 @@ router.post('/', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, presentacion, tipo, precio, stock_actual, fecha_vencimiento, categoria } = req.body;
+        const { nombre, presentacion, tipo, precio, categoria } = req.body;
 
-        // Actualizar categoría si cambió
         let categoriaId;
         if (categoria) {
             const catNorm = normalizarTexto(categoria);

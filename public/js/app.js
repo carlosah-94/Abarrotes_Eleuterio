@@ -112,6 +112,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initData();
 
+    // ============================================================
+    // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS (API FETCH)
+    // ============================================================
+    async function apiFetch(url, options = {}) {
+        const token = localStorage.getItem('authToken');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...options.headers
+        };
+        const response = await fetch(url, { ...options, headers });
+
+        // Si el token expiró, redirigir al login
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('authToken');
+            navigateTo('login');
+            throw new Error('Sesión expirada');
+        }
+
+        return response;
+    }
+    // Hacer apiFetch accesible globalmente
+    window.apiFetch = apiFetch;
+
     // Acceso a datos con normalización automática de lotes y campos faltantes
     function getProducts() {
         const products = JSON.parse(localStorage.getItem('products')) || [];
@@ -1475,30 +1499,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Validar Formularios - Simular navegación
-    document.querySelectorAll('form').forEach(form => {
-        if(form.id === 'form-add-product' || form.id === 'form-edit-product' || form.id === 'form-sale' || form.id === 'form-proveedores') return; // Ya manejados
-        
-        form.addEventListener('submit', (e) => {
+    // ============================================================
+    // LOGIN REAL CON JWT
+    // ============================================================
+    const loginForm = document.querySelector('#view-login form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if(submitBtn) {
-                const text = submitBtn.innerText.toLowerCase();
-                if (text.includes('acceder') || text.includes('crear')) {
+            const email = document.querySelector('#view-login input[type="email"]').value;
+            const password = document.getElementById('login-password').value;
+            const btn = loginForm.querySelector('button[type="submit"]');
+
+            // Limpiar error previo
+            const prevError = document.getElementById('login-error-msg');
+            if (prevError) prevError.remove();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> Verificando...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    localStorage.setItem('authToken', data.token);
                     navigateTo('main');
-                } else if (text.includes('registrar orden') || text.includes('finalizar')) {
-                    alert('Operación procesada con éxito.');
+                } else {
+                    showLoginError(data.error || 'Credenciales incorrectas');
                 }
+            } catch (err) {
+                showLoginError('Error de conexión. Inténtalo de nuevo.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Acceder al Panel <span class="material-symbols-outlined text-[20px]">arrow_forward</span>';
             }
         });
-    });
+    }
 
-    // Logout
+    function showLoginError(msg) {
+        let errDiv = document.getElementById('login-error-msg');
+        if (!errDiv) {
+            errDiv = document.createElement('p');
+            errDiv.id = 'login-error-msg';
+            errDiv.style.cssText = 'color: #ba1a1a; font-size: 0.875rem; font-weight: 600; text-align: center; margin-top: 0.5rem;';
+            const loginForm = document.querySelector('#view-login form');
+            if (loginForm) loginForm.appendChild(errDiv);
+        }
+        errDiv.innerText = msg;
+    }
+
+    // Logout real con limpieza de token
     document.querySelectorAll('[data-action="logout"]').forEach(btn => {
-         btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              navigateTo('login');
-         });
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (err) { /* ignorar errores de red */ }
+            localStorage.removeItem('authToken');
+            navigateTo('login');
+        });
     });
 
     // Inicializar renders e interfaces al cargar

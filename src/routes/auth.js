@@ -15,7 +15,6 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Email y contraseña son requeridos' });
         }
 
-        // Buscar usuario por email
         const { data: usuario, error } = await supabase
             .from('usuario')
             .select('*')
@@ -27,19 +26,16 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Credenciales incorrectas' });
         }
 
-        // Verificar contraseña con bcrypt
         const passwordOk = await bcrypt.compare(password, usuario.password_hash);
         if (!passwordOk) {
             return res.status(401).json({ error: 'Credenciales incorrectas' });
         }
 
-        // Actualizar último acceso
         await supabase
             .from('usuario')
             .update({ ultimo_acceso: new Date().toISOString() })
             .eq('id', usuario.id);
 
-        // Generar token JWT (expira en 8 horas)
         const token = jwt.sign(
             { id: usuario.id, email: usuario.email },
             process.env.JWT_SECRET,
@@ -55,7 +51,6 @@ router.post('/login', async (req, res) => {
 
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
-    // El token se invalida en el cliente eliminando el localStorage
     res.json({ message: 'Sesión cerrada correctamente' });
 });
 
