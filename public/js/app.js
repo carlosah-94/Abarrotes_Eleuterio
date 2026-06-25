@@ -80,38 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return (result.trim() + ' CON ' + decimalStr).toUpperCase();
     }
 
-    // Inicializar los datos de LocalStorage
-    function initData() {
-        if (!localStorage.getItem('products')) {
-            const initialProducts = [
-                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', batches: [{ qty: 42, dueDate: '2026-12-31' }], salesCount: 0 },
-                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', batches: [{ qty: 5, dueDate: '2026-06-30' }], salesCount: 0 },
-                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', batches: [{ qty: 120, dueDate: '2026-08-15' }], salesCount: 0 },
-                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', batches: [{ qty: 15, dueDate: '2026-06-10' }], salesCount: 0 },
-                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 30, dueDate: '2026-06-25' }], salesCount: 0 },
-                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 50, dueDate: '2027-01-20' }], salesCount: 0 }
-            ];
-            localStorage.setItem('products', JSON.stringify(initialProducts));
-        }
-        if (!localStorage.getItem('cart')) {
-            localStorage.setItem('cart', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('salesHistory')) {
-            localStorage.setItem('salesHistory', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('providerOrdersHistory')) {
-            localStorage.setItem('providerOrdersHistory', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('dismissedNotifications')) {
-            localStorage.setItem('dismissedNotifications', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('lastResetSunday')) {
-            localStorage.setItem('lastResetSunday', '');
-        }
-    }
-    
-    initData();
-
     // ============================================================
     // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS (API FETCH)
     // ============================================================
@@ -135,36 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Hacer apiFetch accesible globalmente
     window.apiFetch = apiFetch;
-
-    // Acceso a datos con normalización automática de lotes y campos faltantes
-    function getProducts() {
-        const products = JSON.parse(localStorage.getItem('products')) || [];
-        let updated = false;
-        products.forEach(p => {
-            if (!p.batches) {
-                p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
-                updated = true;
-            }
-            if (p.salesCount === undefined) {
-                p.salesCount = 0;
-                updated = true;
-            }
-        });
-        if (updated) {
-            localStorage.setItem('products', JSON.stringify(products));
-        }
-        return products;
-    }
-
-    function saveProducts(products) {
-        localStorage.setItem('products', JSON.stringify(products));
-        renderInventory();
-        renderFrequentProducts();
-        updateProviderDatalist();
-        updateCategoryDatalist();
-        updateDashboard();
-        checkNotifications();
-    }
 
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
@@ -315,200 +253,175 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Autocompletado de categorías
-    window.updateCategoryDatalist = function() {
+    window.updateCategoryDatalist = async function() {
         const datalist = document.getElementById('categories-list');
         if (!datalist) return;
-        datalist.innerHTML = '';
-        
-        const products = getProducts();
-        const cats = new Set(products.map(p => p.category).filter(Boolean));
-        if (cats.size === 0) {
-            cats.add('Abarrotes');
-            cats.add('Lácteos');
-            cats.add('Bebidas');
+        try {
+            const res = await apiFetch('/api/categorias');
+            const categorias = await res.json();
+            datalist.innerHTML = '';
+            categorias.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.nombre;
+                datalist.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Error cargando categorías:', err);
         }
-        cats.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            datalist.appendChild(opt);
-        });
     };
 
-    window.renderInventory = function() {
+    window.renderInventory = async function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
-        
-        let allProducts = getProducts();
-        
-        // Calcular tarjetas dinámicas de inventario
-        const totalProducts = allProducts.length;
-        const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price) || 0) * (p.stock || 0), 0);
-        const criticalStockCount = allProducts.filter(p => p.stock <= 10).length;
-        const uniqueCats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
 
-        const cardTotal = document.getElementById('card-total-products');
-        const cardValue = document.getElementById('card-inventory-value');
-        const cardCritical = document.getElementById('card-critical-stock');
-        const cardCats = document.getElementById('card-categories-count');
+        try {
+            // Cargar estadísticas
+            const statsRes = await apiFetch('/api/productos/stats');
+            const stats = await statsRes.json();
 
-        if (cardTotal) cardTotal.innerText = totalProducts;
-        if (cardValue) cardValue.innerText = `S/. ${totalValue.toFixed(2)}`;
-        if (cardCritical) cardCritical.innerText = criticalStockCount;
-        if (cardCats) cardCats.innerText = uniqueCats;
+            const cardTotal = document.getElementById('card-total-products');
+            const cardValue = document.getElementById('card-inventory-value');
+            const cardCritical = document.getElementById('card-critical-stock');
+            const cardCats = document.getElementById('card-categories-count');
 
-        // Búsqueda insensible a mayúsculas y tildes
-        if (currentSearchTerm) {
-            const cleanSearch = normalizeText(currentSearchTerm);
-            allProducts = allProducts.filter(p => 
-                normalizeText(p.name).includes(cleanSearch) ||
-                (p.presentation && normalizeText(p.presentation).includes(cleanSearch)) ||
-                (p.type && normalizeText(p.type).includes(cleanSearch)) ||
-                normalizeText(p.category).includes(cleanSearch)
-            );
-        }
-        
-        const totalPages = Math.ceil(allProducts.length / itemsPerPage) || 1;
-        
-        // Asegurar que no se exceda el limite al borrar elementos finales
-        if(currentPage > totalPages) currentPage = totalPages;
-        if(currentPage < 1) currentPage = 1;
+            if (cardTotal) cardTotal.innerText = stats.totalProductos;
+            if (cardValue) cardValue.innerText = `S/. ${stats.valorInventario.toFixed(2)}`;
+            if (cardCritical) cardCritical.innerText = stats.stockCritico;
+            if (cardCats) cardCats.innerText = stats.totalCategorias;
 
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const productsToRender = allProducts.slice(startIndex, endIndex);
+            // Cargar productos con filtros
+            const params = new URLSearchParams();
+            if (currentSearchTerm) params.set('busqueda', currentSearchTerm);
+            params.set('pagina', currentPage);
+            params.set('limite', itemsPerPage);
 
-        tableBody.innerHTML = '';
-        
-        productsToRender.forEach(p => {
-            const stockClass = p.stock <= 10 ? 'text-error' : '';
-            const catColor = normalizeText(p.category).includes('lacteo') ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
-            
-            // Lógica de fecha vencimiento (Rojo si venció, Naranja si vence en <= 30 días)
-            let dateClass = 'text-on-surface';
-            let dateStr = 'N/A';
-            if (p.dueDate) {
-                dateStr = p.dueDate;
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                const due = new Date(p.dueDate);
-                due.setHours(0,0,0,0);
-                const diffTime = due - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays <= 0) dateClass = 'text-error font-bold text-red-600';
-                else if (diffDays <= 30) dateClass = 'text-orange-600 font-bold';
+            const prodRes = await apiFetch(`/api/productos?${params}`);
+            const { data: productos, total } = await prodRes.json();
+
+            const totalPages = Math.ceil(total / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            tableBody.innerHTML = '';
+
+            productos.forEach(p => {
+                const stockClass = p.stock_actual <= p.stock_minimo ? 'text-error' : '';
+                const catName = p.categoria_nombre || (p.categoria ? p.categoria.nombre : 'Sin categoría');
+                const catColor = normalizeText(catName).includes('lacteo') ? 'bg-primary-fixed/50 text-on-primary-fixed-variant' : 'bg-secondary-container/30 text-on-secondary-container';
+
+                let dateClass = 'text-on-surface';
+                let dateStr = 'N/A';
+                if (p.fecha_vencimiento) {
+                    dateStr = p.fecha_vencimiento;
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    const due = new Date(p.fecha_vencimiento); due.setHours(0,0,0,0);
+                    const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 0) dateClass = 'text-error font-bold text-red-600';
+                    else if (diffDays <= 30) dateClass = 'text-orange-600 font-bold';
+                }
+
+                const displayName = p.nombre + (p.presentacion ? ' ' + p.presentacion : '');
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-surface-container-low transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-on-surface">${displayName}</td>
+                    <td class="px-6 py-4 text-center"><span class="px-3 py-1 ${catColor} rounded-full text-xs font-semibold">${catName}</span></td>
+                    <td class="px-6 py-4 font-bold text-center ${stockClass}">${p.stock_actual}</td>
+                    <td class="px-6 py-4 font-semibold text-center ${dateClass}">${dateStr}</td>
+                    <td class="px-6 py-4 text-center font-headline font-bold">${parseFloat(p.precio).toFixed(2)}</td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="editProduct(${p.id})" class="text-slate-400 hover:text-primary transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
+                        <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-tertiary transition-all p-1 ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Paginación
+            const txtInfo = document.getElementById('pagination-info');
+            const btnPrev = document.getElementById('btn-prev-page');
+            const btnNext = document.getElementById('btn-next-page');
+
+            if (txtInfo) txtInfo.innerText = `Página ${currentPage} de ${totalPages}`;
+            if (btnPrev) { btnPrev.disabled = (currentPage === 1); btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; renderInventory(); } }; }
+            if (btnNext) { btnNext.disabled = (currentPage === totalPages); btnNext.onclick = () => { if (currentPage < totalPages) { currentPage++; renderInventory(); } }; }
+
+        } catch (err) {
+            console.error('Error al cargar inventario:', err);
+            if (err.message !== 'Sesión expirada') {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-error">Error al cargar inventario</td></tr>`;
             }
-
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-surface-container-low transition-colors';
-            tr.innerHTML = `
-                <td class="px-6 py-4 font-semibold text-on-surface">${p.name} ${p.presentation || ''}</td>
-                <td class="px-6 py-4 text-center"><span class="px-3 py-1 ${catColor} rounded-full text-xs font-semibold">${p.category}</span></td>
-                <td class="px-6 py-4 font-bold text-center ${stockClass}">${p.stock}</td>
-                <td class="px-6 py-4 font-semibold text-center ${dateClass}">${dateStr}</td>
-                <td class="px-6 py-4 text-center font-headline font-bold">${parseFloat(p.price).toFixed(2)}</td>
-                <td class="px-6 py-4 text-center">
-                    <button onclick="editProduct(${p.id})" class="text-slate-400 hover:text-primary transition-all p-1"><span class="material-symbols-outlined text-sm">edit</span></button>
-                    <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-tertiary transition-all p-1 ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
-
-        // Actualizar UI paginación
-        const txtInfo = document.getElementById('pagination-info');
-        const btnPrev = document.getElementById('btn-prev-page');
-        const btnNext = document.getElementById('btn-next-page');
-
-        if(txtInfo) txtInfo.innerText = `Página ${currentPage} de ${totalPages}`;
-        if(btnPrev) {
-            btnPrev.disabled = (currentPage === 1);
-            btnPrev.onclick = () => { if(currentPage > 1) { currentPage--; renderInventory(); } };
-        }
-        if(btnNext) {
-            btnNext.disabled = (currentPage === totalPages);
-            btnNext.onclick = () => { if(currentPage < totalPages) { currentPage++; renderInventory(); } };
         }
     };
 
     // Eliminar producto
-    window.deleteProduct = function(id) {
-        if(confirm('¿Seguro que deseas eliminar este producto?')) {
-            const products = getProducts().filter(p => p.id !== id);
-            saveProducts(products);
-            
-            // También eliminarlo del carrito si estuviera
-            const cart = getCart().filter(c => c.id !== id);
-            saveCart(cart);
+    window.deleteProduct = async function(id) {
+        if (confirm('¿Seguro que deseas eliminar este producto?')) {
+            try {
+                await apiFetch(`/api/productos/${id}`, { method: 'DELETE' });
+                await renderInventory();
+            } catch (err) {
+                console.error('Error al eliminar:', err);
+            }
         }
     };
 
     // Editar producto
     let editingId = null;
-    window.editProduct = function(id) {
-        const product = getProducts().find(p => p.id === id);
-        if(!product) return;
-        editingId = id;
-        
-        document.getElementById('edit-product-name').value = product.name || '';
-        document.getElementById('edit-product-size').value = product.presentation || '';
-        const typeInput = document.getElementById('edit-product-type');
-        if(typeInput) typeInput.value = product.type || '';
-        document.getElementById('edit-product-price').value = product.price || 0;
-        document.getElementById('edit-product-date').value = product.dueDate || '';
-        
-        const catInput = document.getElementById('edit-product-category');
-        if(catInput) catInput.value = product.category || '';
-        
-        openModal('modal-edit-product');
+    window.editProduct = async function(id) {
+        try {
+            const res = await apiFetch(`/api/productos?busqueda=&pagina=1&limite=100`);
+            const { data: productos } = await res.json();
+            const product = productos.find(p => p.id === id);
+            if (!product) return;
+
+            editingId = id;
+            document.getElementById('edit-product-name').value = product.nombre || '';
+            document.getElementById('edit-product-size').value = product.presentacion || '';
+            const typeInput = document.getElementById('edit-product-type');
+            if (typeInput) typeInput.value = product.tipo || '';
+            document.getElementById('edit-product-price').value = product.precio || 0;
+            document.getElementById('edit-product-date').value = product.fecha_vencimiento || '';
+            const catInput = document.getElementById('edit-product-category');
+            if (catInput) catInput.value = product.categoria_nombre || '';
+
+            openModal('modal-edit-product');
+        } catch (err) {
+            console.error('Error cargando producto para editar:', err);
+        }
     };
 
-    // Guardar Edición
-    document.getElementById('form-edit-product').addEventListener('submit', (e) => {
+    document.getElementById('form-edit-product').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const products = getProducts();
-        const idx = products.findIndex(p => p.id === editingId);
-        
-        if(idx !== -1) {
-            const newName = document.getElementById('edit-product-name').value;
-            const newSize = document.getElementById('edit-product-size').value;
-            const typeInput = document.getElementById('edit-product-type');
-            const newType = typeInput ? typeInput.value : '';
-            const newPrice = parseFloat(document.getElementById('edit-product-price').value);
-            const newDueDate = document.getElementById('edit-product-date').value;
-            const catInput = document.getElementById('edit-product-category');
-            const newCat = catInput ? catInput.value.trim() : 'Abarrotes';
+        try {
+            const response = await apiFetch(`/api/productos/${editingId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    nombre: document.getElementById('edit-product-name').value,
+                    presentacion: document.getElementById('edit-product-size').value,
+                    tipo: document.getElementById('edit-product-type') ? document.getElementById('edit-product-type').value : '',
+                    precio: parseFloat(document.getElementById('edit-product-price').value),
+                    categoria: document.getElementById('edit-product-category') ? document.getElementById('edit-product-category').value.trim() : 'Abarrotes'
+                })
+            });
 
-            products[idx].name = newName;
-            products[idx].presentation = newSize;
-            products[idx].type = newType;
-            products[idx].price = newPrice;
-            products[idx].dueDate = newDueDate;
-            products[idx].category = newCat;
-
-            // Sincronizar lotes
-            if (!products[idx].batches || products[idx].batches.length === 0) {
-                products[idx].batches = [{ qty: products[idx].stock, dueDate: newDueDate }];
+            if (response.ok) {
+                closeModal('modal-edit-product');
+                await renderInventory();
             } else {
-                products[idx].batches.sort((a, b) => {
-                    if (!a.dueDate) return 1;
-                    if (!b.dueDate) return -1;
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                });
-                products[idx].batches[0].dueDate = newDueDate;
+                const err = await response.json();
+                alert('Error: ' + err.error);
             }
-
-            saveProducts(products);
+        } catch (err) {
+            if (err.message !== 'Sesión expirada') alert('Error de conexión');
         }
-        closeModal('modal-edit-product');
     });
 
     // Agregar Producto Nuevo
-    document.getElementById('form-add-product').addEventListener('submit', (e) => {
+    document.getElementById('form-add-product').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const products = getProducts();
         const catInput = document.getElementById('add-product-category');
         const categoryVal = catInput ? catInput.value.trim() : 'Abarrotes';
-        
         const priceVal = parseFloat(document.getElementById('add-product-price').value);
         const stockVal = parseInt(document.getElementById('add-product-stock').value, 10);
         const dateVal = document.getElementById('add-product-date').value;
@@ -516,25 +429,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const sizeVal = document.getElementById('add-product-size').value;
         const typeVal = document.getElementById('add-product-type') ? document.getElementById('add-product-type').value : '';
 
-        const newProduct = {
-            id: Date.now(),
-            name: nameVal,
-            presentation: sizeVal,
-            type: typeVal,
-            price: priceVal,
-            stock: stockVal,
-            dueDate: dateVal,
-            category: categoryVal,
-            img: DEFAULT_PRODUCT_IMAGE,
-            batches: [{ qty: stockVal, dueDate: dateVal }],
-            salesCount: 0
-        };
-        
-        products.push(newProduct);
-        saveProducts(products); // Renderiza y limpia notificaciones
-        
-        e.target.reset();
-        closeModal('modal-add-product');
+        try {
+            const response = await apiFetch('/api/productos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nombre: nameVal,
+                    presentacion: sizeVal,
+                    tipo: typeVal,
+                    precio: priceVal,
+                    stock_inicial: stockVal,
+                    fecha_vencimiento: dateVal,
+                    categoria: categoryVal
+                })
+            });
+
+            if (response.ok) {
+                e.target.reset();
+                closeModal('modal-add-product');
+                await renderInventory();
+                checkNotifications();
+            } else {
+                const err = await response.json();
+                alert('Error: ' + err.error);
+            }
+        } catch (err) {
+            if (err.message !== 'Sesión expirada') alert('Error de conexión');
+        }
     });
 
     // === LÓGICA DE VENTAS ===
