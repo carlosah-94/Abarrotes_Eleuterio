@@ -80,6 +80,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return (result.trim() + ' CON ' + decimalStr).toUpperCase();
     }
 
+    // Inicializar los datos de LocalStorage
+    function initData() {
+        if (!localStorage.getItem('products')) {
+            const initialProducts = [
+                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', batches: [{ qty: 42, dueDate: '2026-12-31' }], salesCount: 0 },
+                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', batches: [{ qty: 5, dueDate: '2026-06-30' }], salesCount: 0 },
+                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', batches: [{ qty: 120, dueDate: '2026-08-15' }], salesCount: 0 },
+                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', batches: [{ qty: 15, dueDate: '2026-06-10' }], salesCount: 0 },
+                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 30, dueDate: '2026-06-25' }], salesCount: 0 },
+                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 50, dueDate: '2027-01-20' }], salesCount: 0 }
+            ];
+            localStorage.setItem('products', JSON.stringify(initialProducts));
+        }
+        if (!localStorage.getItem('cart')) {
+            localStorage.setItem('cart', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('salesHistory')) {
+            localStorage.setItem('salesHistory', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('providerOrdersHistory')) {
+            localStorage.setItem('providerOrdersHistory', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('dismissedNotifications')) {
+            localStorage.setItem('dismissedNotifications', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('lastResetSunday')) {
+            localStorage.setItem('lastResetSunday', '');
+        }
+    }
+    
+    initData();
+
     // ============================================================
     // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS (API FETCH)
     // ============================================================
@@ -103,6 +135,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Hacer apiFetch accesible globalmente
     window.apiFetch = apiFetch;
+
+    // Acceso a datos con normalización automática de lotes y campos faltantes
+    function getProducts() {
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+        let updated = false;
+        products.forEach(p => {
+            if (!p.batches) {
+                p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
+                updated = true;
+            }
+            if (p.salesCount === undefined) {
+                p.salesCount = 0;
+                updated = true;
+            }
+        });
+        if (updated) {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+        return products;
+    }
+
+    function saveProducts(products) {
+        localStorage.setItem('products', JSON.stringify(products));
+        renderInventory();
+        renderFrequentProducts();
+        updateProviderDatalist();
+        updateCategoryDatalist();
+        updateDashboard();
+        checkNotifications();
+    }
 
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
@@ -366,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Editar producto
     let editingId = null;
     window.editProduct = async function(id) {
         try {
@@ -458,91 +519,87 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // === LÓGICA DE VENTAS ===
-    window.renderFrequentProducts = function() {
+    window.renderFrequentProducts = async function() {
         const grid = document.getElementById('frequent-products-grid');
         if (!grid) return;
-        
-        let products = getProducts();
-        
-        if (currentSearchTerm) {
-            const cleanSearch = normalizeText(currentSearchTerm);
-            products = products.filter(p => 
-                normalizeText(p.name).includes(cleanSearch) ||
-                (p.presentation && normalizeText(p.presentation).includes(cleanSearch)) ||
-                (p.type && normalizeText(p.type).includes(cleanSearch)) ||
-                normalizeText(p.category).includes(cleanSearch)
-            );
-        }
 
-        // Ordenar por volumen de ventas (Top 8 más vendidos)
-        products.sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
-        products = products.slice(0, 8); // Muestra mínimo 1 y máximo 8
-
-        grid.innerHTML = '';
-        
-        if (products.length === 0) {
-            grid.innerHTML = '<p class="text-sm text-slate-400 text-center col-span-4 py-8">No hay productos que coincidan.</p>';
-            return;
-        }
-
-        products.forEach(p => {
-            let stockHtml = '';
-            let btnDisabled = '';
-            let btnClass = 'mt-auto w-full py-2 text-xs bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors';
-            
-            if (p.stock > 10) {
-                stockHtml = `<p class="text-xs mb-2 text-slate-600"><strong>Stock: ${p.stock}</strong> 🟢</p>`;
-            } else if (p.stock > 0 && p.stock <= 10) {
-                stockHtml = `<p class="text-xs mb-2 text-orange-600"><strong>Stock: ${p.stock}</strong> 🟠</p>`;
-            } else {
-                stockHtml = `<p class="text-xs mb-2 text-red-600"><strong>Agotado</strong> 🔴</p>`;
-                btnDisabled = 'disabled';
-                btnClass = 'mt-auto w-full py-2 text-xs bg-slate-100 text-slate-400 font-bold rounded-lg cursor-not-allowed';
+        try {
+            let url = '/api/productos/frecuentes';
+            if (currentSearchTerm) {
+                url = `/api/productos?busqueda=${encodeURIComponent(currentSearchTerm)}&limite=8`;
             }
 
-            const typeTag = p.type ? `<div class="mb-2 flex justify-end min-h-[20px]"><span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-md text-[10px] font-bold leading-none">${p.type}</span></div>` : '<div class="mb-2 min-h-[20px]"></div>';
+            const res = await apiFetch(url);
+            let productos;
+            const data = await res.json();
+            productos = data.data ? data.data : data; // Manejar ambos formatos
 
-            const displayImg = getProductImage(p);
+            grid.innerHTML = '';
+            if (!productos || productos.length === 0) {
+                grid.innerHTML = '<p class="text-sm text-slate-400 text-center col-span-4 py-8">No hay productos que coincidan.</p>';
+                return;
+            }
 
-            const div = document.createElement('div');
-            div.className = 'bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center flex flex-col justify-between';
-            div.innerHTML = `
-                ${typeTag}
-                <div>
-                    <img src="${displayImg}" class="h-24 w-full object-cover rounded-md mb-2 bg-surface-container-low ${p.stock === 0 ? 'opacity-50' : ''}">
-                    <p class="font-bold text-sm leading-tight mb-1">${p.name} ${p.presentation || ''}</p>
-                    <p class="text-primary font-bold mb-1">S/. ${parseFloat(p.price).toFixed(2)}</p>
-                    ${stockHtml}
-                </div>
-                <button onclick="addToCart(${p.id})" ${btnDisabled} class="${btnClass}">Agregar</button>
-            `;
-            grid.appendChild(div);
-        });
+            productos.forEach(p => {
+                let stockHtml = '';
+                let btnDisabled = '';
+                let btnClass = 'mt-auto w-full py-2 text-xs bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors';
+
+                if (p.stock_actual > 10) {
+                    stockHtml = `<p class="text-xs mb-2 text-slate-600"><strong>Stock: ${p.stock_actual}</strong> 🟢</p>`;
+                } else if (p.stock_actual > 0) {
+                    stockHtml = `<p class="text-xs mb-2 text-orange-600"><strong>Stock: ${p.stock_actual}</strong> 🟠</p>`;
+                } else {
+                    stockHtml = `<p class="text-xs mb-2 text-red-600"><strong>Agotado</strong> 🔴</p>`;
+                    btnDisabled = 'disabled';
+                    btnClass = 'mt-auto w-full py-2 text-xs bg-slate-100 text-slate-400 font-bold rounded-lg cursor-not-allowed';
+                }
+
+                const typeTag = p.tipo ? `<div class="mb-2 flex justify-end min-h-[20px]"><span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-md text-[10px] font-bold leading-none">${p.tipo}</span></div>` : '<div class="mb-2 min-h-[20px]"></div>';
+
+                // Imagen: intentar cargar la imagen del producto, si falla usar default
+                const imgSrc = p.imagen_url || DEFAULT_PRODUCT_IMAGE;
+
+                const div = document.createElement('div');
+                div.className = 'bg-surface-container-lowest p-4 rounded-xl shadow-sm text-center flex flex-col justify-between';
+                div.innerHTML = `
+                    ${typeTag}
+                    <div>
+                        <img src="${imgSrc}" onerror="this.src='${DEFAULT_PRODUCT_IMAGE}'" class="h-24 w-full object-cover rounded-md mb-2 bg-surface-container-low ${p.stock_actual === 0 ? 'opacity-50' : ''}">
+                        <p class="font-bold text-sm leading-tight mb-1">${p.nombre} ${p.presentacion || ''}</p>
+                        <p class="text-primary font-bold mb-1">S/. ${parseFloat(p.precio).toFixed(2)}</p>
+                        ${stockHtml}
+                    </div>
+                    <button onclick="addToCart(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.precio}, ${p.stock_actual}, '${(p.presentacion || '').replace(/'/g, "\\'")}')" ${btnDisabled} class="${btnClass}">Agregar</button>
+                `;
+                grid.appendChild(div);
+            });
+        } catch (err) {
+            if (err.message !== 'Sesión expirada') {
+                grid.innerHTML = '<p class="text-error text-center col-span-4">Error al cargar productos</p>';
+            }
+        }
     };
 
-    window.addToCart = function(id) {
-        const products = getProducts();
-        const product = products.find(p => p.id === id);
-        if(!product) return;
-        
+    window.addToCart = function(id, nombre, precio, stockDisponible, presentacion) {
         const cart = getCart();
         const existing = cart.find(c => c.id === id);
-        
+
         if (existing) {
-            if(existing.qty < product.stock) {
+            if (existing.qty < stockDisponible) {
                 existing.qty++;
             } else {
                 alert('Stock insuficiente para este producto');
+                return;
             }
         } else {
-            if(product.stock > 0) {
-                cart.push({ ...product, qty: 1 });
+            if (stockDisponible > 0) {
+                cart.push({ id, name: nombre, price: precio, qty: 1, stock: stockDisponible, presentation: presentacion });
             } else {
                 alert('Producto fuera de stock');
                 return;
             }
         }
-        
         saveCart(cart);
     };
 
@@ -600,84 +657,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Finalizar Venta (Lógica FEFO - First Expired, First Out)
-    document.getElementById('form-sale').addEventListener('submit', (e) => {
+    document.getElementById('form-sale').addEventListener('submit', async (e) => {
         e.preventDefault();
         const cart = getCart();
-        if(cart.length === 0) {
-             alert('El carrito está vacío');
-             return;
+        if (cart.length === 0) { alert('El carrito está vacío'); return; }
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> Procesando...';
+
+        try {
+            const response = await apiFetch('/api/ventas', {
+                method: 'POST',
+                body: JSON.stringify({
+                    items: cart.map(item => ({
+                        producto_id: item.id,
+                        cantidad: item.qty,
+                        precio_unitario: item.price
+                    }))
+                })
+            });
+
+            if (response.ok) {
+                const venta = await response.json();
+                localStorage.setItem('lastSale', JSON.stringify({
+                    id: venta.numero_boleta,
+                    date: venta.fecha,
+                    items: venta.items.map(i => ({
+                        name: i.producto ? i.producto.nombre + (i.producto.presentacion ? ' ' + i.producto.presentacion : '') : 'Producto',
+                        price: i.precio_unitario,
+                        qty: i.cantidad
+                    })),
+                    total: parseFloat(venta.total),
+                    base_imponible: parseFloat(venta.base_imponible),
+                    igv: parseFloat(venta.igv),
+                    numero_boleta: venta.numero_boleta
+                }));
+                saveCart([]);
+                alert('Venta finalizada exitosamente.');
+                await renderFrequentProducts();
+                updateDashboard();
+                checkNotifications();
+            } else {
+                const err = await response.json();
+                alert('Error: ' + err.error);
+            }
+        } catch (err) {
+            if (err.message !== 'Sesión expirada') alert('Error de conexión al registrar venta');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Finalizar Venta <span class="material-symbols-outlined">check_circle</span>';
         }
-        
-        const products = getProducts();
-        
-        cart.forEach(cartItem => {
-             const p = products.find(p => p.id === cartItem.id);
-             if(p) {
-                 let qtyToDeduct = cartItem.qty;
-                 if (!p.batches) p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
-                 
-                 // Ordenar lotes por fecha de vencimiento (los más antiguos primero)
-                 p.batches.sort((a, b) => {
-                     if (!a.dueDate) return 1;
-                     if (!b.dueDate) return -1;
-                     return new Date(a.dueDate) - new Date(b.dueDate);
-                 });
-                 
-                 for (let i = 0; i < p.batches.length; i++) {
-                     if (qtyToDeduct <= 0) break;
-                     const batch = p.batches[i];
-                     if (batch.qty > 0) {
-                         if (batch.qty >= qtyToDeduct) {
-                             batch.qty -= qtyToDeduct;
-                             qtyToDeduct = 0;
-                         } else {
-                             qtyToDeduct -= batch.qty;
-                             batch.qty = 0;
-                         }
-                     }
-                 }
-                 
-                 // Filtrar lotes activos o vacíos
-                 p.batches = p.batches.filter(b => b.qty > 0);
-                 if (p.batches.length === 0) {
-                     p.batches = [{ qty: 0, dueDate: '' }];
-                 }
-                 
-                 // Recalcular stock y fecha de vencimiento
-                 p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
-                 const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
-                 if (activeDates.length > 0) {
-                     activeDates.sort();
-                     p.dueDate = activeDates[0];
-                 } else {
-                     p.dueDate = '';
-                 }
-                 
-                 p.salesCount = (p.salesCount || 0) + cartItem.qty;
-             }
-        });
-        
-        saveProducts(products); // Guarda inventario y renderiza
-        
-        // Registrar en historial de ventas
-        const salesHistory = JSON.parse(localStorage.getItem('salesHistory')) || [];
-        const saleRecord = {
-            id: Date.now(),
-            date: new Date().toISOString(),
-            items: cart.map(item => ({ id: item.id, name: item.name, price: item.price, qty: item.qty })),
-            total: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
-            archived: false
-        };
-        salesHistory.push(saleRecord);
-        localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-        localStorage.setItem('lastSale', JSON.stringify(saleRecord)); // Para descargar comprobante
-        
-        saveCart([]); // Limpia el carrito
-        
-        alert('Venta finalizada exitosamente.\nSe ha descontado del inventario y registrado en el historial.');
-        updateDashboard();
-        checkNotifications();
-        updateReportsSummary();
     });
 
     // Descargar Comprobante PDF (Boleta Térmica de 80mm mejorada según imagen)
