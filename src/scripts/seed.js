@@ -13,10 +13,8 @@ const supabase = createClient(
 async function seed() {
     console.log('🌱 Iniciando seed de la base de datos...');
 
-    // Crear hash de la contraseña
     const passwordHash = await bcrypt.hash('Eleuterio2024!', 12);
 
-    // Insertar usuario
     const { data, error } = await supabase
         .from('usuario')
         .upsert({

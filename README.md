@@ -11,13 +11,13 @@ Es una plataforma web diseñada para optimizar la logística y el control de inv
 
 ## Instalación y Ejecución Local
 
-1. Para instalar y ejecutar el sistema en tu computadora, es requisito indispensable tener instalado previamente Node.js (el cual ya incluye el gestor de paquetes npm). *No cuenta con base de datos actualmente*
+1. Para instalar y ejecutar el sistema en tu computadora, es requisito indispensable tener instalado previamente Node.js (el cual ya incluye el gestor de paquetes npm).
 
 2. Primero, debes clonar este repositorio en tu computadora usando Git o descargarlo como archivo ZIP y extraerlo en una carpeta de tu preferencia. Una vez descargado, abre una terminal (o consola de comandos) asegurándote de estar ubicado exactamente dentro de la carpeta principal del proyecto.
 
 3. A continuación, en la misma terminal, ejecuta el comando "npm install". Esto le indicará a Node.js que lea el archivo "package.json" y descargue automáticamente todas las dependencias necesarias (como el framework Express) para que el servidor funcione.
 
-4. Una vez que termine la instalación de las dependencias, inicializa el sistema ejecutando el comando **node server.js**. Si la consola te indica que el servidor está corriendo, el proceso fue exitoso.
+4. Una vez que termine la instalación de las dependencias, inicializa el sistema ejecutando el comando **npm run dev**. Si la consola te indica que el servidor está corriendo, el proceso fue exitoso.
 
 5. Abre tu navegador web e ingresa la dirección local predeterminada, que es `http://localhost:3000`
 
@@ -51,7 +51,12 @@ El proyecto utiliza **PostgreSQL** a través de **Supabase** como base de datos.
    - `SUPABASE_SERVICE_KEY` — Service Role Key de Supabase
    - `JWT_SECRET` — Clave secreta para tokens JWT (cualquier texto largo y aleatorio)
 4. Instala las dependencias: `npm install`
-5. Ejecuta el servidor: `npm run dev`
+5. Crea el usuario inicial: `npm run seed`
+6. Ejecuta el servidor: `npm run dev`
+
+### Credenciales de acceso
+- Email: `eleuterio@abarrotes.com`
+- Contraseña: `Eleuterio2024!`
 
 ## Equipo de Desarrollo
 - **Connery Diaz** - Product Owner
