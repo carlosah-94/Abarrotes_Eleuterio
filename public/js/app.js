@@ -832,15 +832,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // === LÓGICA DE PROVEEDORES ===
     let currentProviderOrder = [];
 
-    window.updateProviderDatalist = function() {
+    window.updateProviderDatalist = async function() {
         const datalist = document.getElementById('proveedores-products');
-        if(!datalist) return;
-        datalist.innerHTML = '';
-        getProducts().forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.name;
-            datalist.appendChild(opt);
-        });
+        if (!datalist) return;
+        try {
+            const res = await apiFetch('/api/productos?limite=200');
+            const { data: productos } = await res.json();
+            datalist.innerHTML = '';
+            productos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.nombre;
+                datalist.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Error cargando productos para proveedores:', err);
+        }
     };
 
     window.renderProviderOrder = function() {
@@ -908,61 +914,48 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProviderOrder();
     };
 
-    document.getElementById('form-proveedores').addEventListener('submit', (e) => {
+    document.getElementById('form-proveedores').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if(currentProviderOrder.length === 0) {
-            alert('Añade al menos un producto a la orden detallada abajo.');
+        if (currentProviderOrder.length === 0) {
+            alert('Añade al menos un producto a la orden.');
             return;
         }
 
-        const products = getProducts();
-        
-        // Sumar stock si el producto existe e insertar nuevo lote
-        currentProviderOrder.forEach(orderItem => {
-            const p = products.find(p => p.name.toLowerCase() === orderItem.name.toLowerCase());
-            if(p) {
-                if (!p.batches) p.batches = [];
-                p.batches.push({ qty: orderItem.qty, dueDate: orderItem.expiry });
-                
-                // Recalcular stock y fecha de vencimiento
-                p.stock = p.batches.reduce((sum, b) => sum + b.qty, 0);
-                const activeDates = p.batches.filter(b => b.dueDate && b.qty > 0).map(b => b.dueDate);
-                if (activeDates.length > 0) {
-                    activeDates.sort();
-                    p.dueDate = activeDates[0];
-                } else {
-                    p.dueDate = orderItem.expiry || p.dueDate;
-                }
-            }
-        });
-
-        saveProducts(products); // Actualiza localStorage
-
-        // Guardar en el historial de proveedores
         const providerName = document.getElementById('provider-name').value;
-        const date = document.getElementById('provider-date').value || new Date().toISOString().split('T')[0];
-        const providerHistory = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
-        
-        providerHistory.push({
-            id: Date.now(),
-            providerName,
-            date,
-            items: [...currentProviderOrder],
-            total: currentProviderOrder.reduce((sum, item) => sum + item.cost, 0),
-            archived: false
-        });
-        localStorage.setItem('providerOrdersHistory', JSON.stringify(providerHistory));
+        const date = document.getElementById('provider-date').value;
 
-        alert('Orden Registrada Exitosamente en el inventario.');
-        
-        // Limpiamos todo
-        currentProviderOrder = [];
-        renderProviderOrder();
-        e.target.reset(); // Botón form reset
-        updateDashboard();
-        checkNotifications();
-        updateReportsSummary();
-        renderProvidersListInReports();
+        try {
+            const response = await apiFetch('/api/ordenes', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nombre_proveedor: providerName,
+                    fecha_recepcion: date,
+                    items: currentProviderOrder.map(item => ({
+                        nombre_producto: item.name,
+                        cantidad_recibida: item.qty,
+                        fecha_vencimiento_lote: item.expiry,
+                        costo_total: item.cost
+                    }))
+                })
+            });
+
+            if (response.ok) {
+                currentProviderOrder = [];
+                renderProviderOrder();
+                e.target.reset();
+                alert('Orden registrada exitosamente.');
+                await renderFrequentProducts();
+                updateDashboard();
+                checkNotifications();
+                updateReportsSummary();
+                renderProvidersListInReports();
+            } else {
+                const err = await response.json();
+                alert('Error: ' + err.error);
+            }
+        } catch (err) {
+            if (err.message !== 'Sesión expirada') alert('Error de conexión');
+        }
     });
 
     // === REPORTES PDF ===
@@ -980,181 +973,166 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function generateSalesWeeklyReportPDF(isAuto = false) {
+    async function generateSalesWeeklyReportPDF(isAuto = false) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
-        
-        // Filtrar SOLO ventas activas (no archivadas)
-        const activeSales = sales.filter(s => !s.archived);
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.setTextColor(0, 83, 91); // Color primario
-        doc.text("Reporte Semanal de Ventas", 20, 20);
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(100);
-        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
-        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
-        
-        doc.setLineWidth(0.5);
-        doc.setDrawColor(0, 83, 91);
-        doc.line(20, 36, 190, 36);
-        
-        // Tarjetas
-        doc.setFillColor(240, 244, 248);
-        doc.rect(20, 42, 80, 25, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(0, 83, 91);
-        doc.text("TOTAL VENDIDO", 25, 48);
-        const totalAmount = activeSales.reduce((sum, s) => sum + s.total, 0);
-        doc.setFontSize(16);
-        doc.text(`S/. ${totalAmount.toFixed(2)}`, 25, 60);
-        
-        doc.setFillColor(240, 244, 248);
-        doc.rect(110, 42, 80, 25, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(0, 83, 91);
-        doc.text("TRANSACCIONES", 115, 48);
-        doc.setFontSize(16);
-        doc.text(`${activeSales.length} ventas`, 115, 60);
-        
-        // Tabla
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(50);
-        doc.text("Detalle de Ventas del Periodo", 20, 80);
-        
-        doc.setFontSize(10);
-        doc.text("Fecha y Hora", 20, 88);
-        doc.text("Código Boleta", 70, 88);
-        doc.text("Productos Vendidos", 110, 88);
-        doc.text("Total", 170, 88);
-        
-        doc.setLineWidth(0.2);
-        doc.setDrawColor(200);
-        doc.line(20, 91, 190, 91);
-        
-        doc.setFont("helvetica", "normal");
-        let y = 97;
-        activeSales.slice(-20).forEach(sale => {
-            const dateStr = new Date(sale.date).toLocaleString();
-            const itemsText = sale.items.map(item => `${item.qty}x ${item.name}`).join(", ");
-            const splitItems = doc.splitTextToSize(itemsText, 55); // 55mm de ancho para envolver
-            
-            const linesCount = splitItems.length;
-            const rowHeight = Math.max(8, linesCount * 5);
-            
-            if (y + rowHeight > 280) {
-                doc.addPage();
-                y = 20;
-            }
-            
-            doc.text(dateStr, 20, y);
-            doc.text(`TKT-${sale.id}`, 70, y);
-            
-            // Imprimir texto multilínea
-            for (let i = 0; i < linesCount; i++) {
-                doc.text(splitItems[i], 110, y + (i * 5));
-            }
-            
-            doc.text(`S/. ${sale.total.toFixed(2)}`, 170, y);
-            y += rowHeight + 3;
-        });
-        
-        doc.save(`reporte_ventas_semanal_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+
+        try {
+            const res = await apiFetch('/api/reportes/ventas-semana');
+            const { ventas, total, transacciones } = await res.json();
+
+            // Título
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.setTextColor(0, 83, 91);
+            doc.text("Reporte Semanal de Ventas", 20, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+            doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(0, 83, 91);
+            doc.line(20, 36, 190, 36);
+
+            // Tarjetas
+            doc.setFillColor(240, 244, 248);
+            doc.rect(20, 42, 80, 25, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(0, 83, 91);
+            doc.text("TOTAL VENDIDO", 25, 48);
+            doc.setFontSize(16);
+            doc.text(`S/. ${total.toFixed(2)}`, 25, 60);
+
+            doc.setFillColor(240, 244, 248);
+            doc.rect(110, 42, 80, 25, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(0, 83, 91);
+            doc.text("TRANSACCIONES", 115, 48);
+            doc.setFontSize(16);
+            doc.text(`${transacciones} ventas`, 115, 60);
+
+            // Tabla
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(50);
+            doc.text("Detalle de Ventas del Periodo", 20, 80);
+
+            doc.setFontSize(10);
+            doc.text("Fecha y Hora", 20, 88);
+            doc.text("Código Boleta", 70, 88);
+            doc.text("Productos Vendidos", 110, 88);
+            doc.text("Total", 170, 88);
+
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(20, 91, 190, 91);
+
+            doc.setFont("helvetica", "normal");
+            let y = 97;
+            ventas.forEach(venta => {
+                const dateStr = new Date(venta.fecha).toLocaleString();
+                const itemsText = venta.items.map(i => `${i.cantidad}x ${i.producto ? i.producto.nombre : 'Producto'}`).join(", ");
+                const splitItems = doc.splitTextToSize(itemsText, 55);
+
+                if (y + splitItems.length * 5 > 280) { doc.addPage(); y = 20; }
+
+                doc.text(dateStr, 20, y);
+                doc.text(venta.numero_boleta, 70, y);
+                splitItems.forEach((line, i) => doc.text(line, 110, y + (i * 5)));
+                doc.text(`S/. ${parseFloat(venta.total).toFixed(2)}`, 170, y);
+                y += Math.max(8, splitItems.length * 5) + 3;
+            });
+
+            doc.save(`reporte_ventas_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+        } catch (err) {
+            console.error('Error generando PDF de ventas:', err);
+            alert('Error al generar el reporte de ventas');
+        }
     }
 
-    function generateProvidersExpensesReportPDF(isAuto = false) {
+    async function generateProvidersExpensesReportPDF(isAuto = false) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
-        
-        // Filtrar SOLO órdenes activas (no archivadas)
-        const activeOrders = orders.filter(o => !o.archived);
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.setTextColor(43, 100, 133); // Color secundario
-        doc.text("Reporte de Gastos con Proveedores", 20, 20);
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(100);
-        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
-        doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
-        
-        doc.setLineWidth(0.5);
-        doc.setDrawColor(43, 100, 133);
-        doc.line(20, 36, 190, 36);
-        
-        // Tarjetas
-        doc.setFillColor(240, 244, 248);
-        doc.rect(20, 42, 80, 25, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(43, 100, 133);
-        doc.text("TOTAL INVERTIDO", 25, 48);
-        const totalExpenses = activeOrders.reduce((sum, o) => sum + o.total, 0);
-        doc.setFontSize(16);
-        doc.text(`S/. ${totalExpenses.toFixed(2)}`, 25, 60);
-        
-        doc.setFillColor(240, 244, 248);
-        doc.rect(110, 42, 80, 25, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(43, 100, 133);
-        doc.text("REABASTECIMIENTOS", 115, 48);
-        doc.setFontSize(16);
-        doc.text(`${activeOrders.length} órdenes`, 115, 60);
-        
-        // Tabla
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(50);
-        doc.text("Detalle de Órdenes a Proveedores", 20, 80);
-        
-        doc.setFontSize(10);
-        doc.text("Fecha", 20, 88);
-        doc.text("Proveedor", 50, 88);
-        doc.text("Detalle de Lotes Recibidos (Vencimiento)", 90, 88);
-        doc.text("Costo Total", 170, 88);
-        
-        doc.setLineWidth(0.2);
-        doc.setDrawColor(200);
-        doc.line(20, 91, 190, 91);
-        
-        doc.setFont("helvetica", "normal");
-        let y = 97;
-        activeOrders.forEach(order => {
-            const itemsText = order.items.map(item => `${item.qty}x ${item.name} (Vence: ${item.expiry || 'N/A'})`).join(", ");
-            const splitItems = doc.splitTextToSize(itemsText, 75); // 75mm de ancho para envolver
-            
-            const linesCount = splitItems.length;
-            const rowHeight = Math.max(8, linesCount * 5);
-            
-            if (y + rowHeight > 280) {
-                doc.addPage();
-                y = 20;
-            }
-            
-            doc.text(order.date, 20, y);
-            doc.text(order.providerName || 'N/A', 50, y);
-            
-            // Imprimir texto multilínea
-            for (let i = 0; i < linesCount; i++) {
-                doc.text(splitItems[i], 90, y + (i * 5));
-            }
-            
-            doc.text(`S/. ${order.total.toFixed(2)}`, 170, y);
-            y += rowHeight + 3;
-        });
-        
-        doc.save(`reporte_proveedores_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+
+        try {
+            const res = await apiFetch('/api/reportes/gastos-semana');
+            const { ordenes, total, totalOrdenes } = await res.json();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.setTextColor(43, 100, 133);
+            doc.text("Reporte de Gastos con Proveedores", 20, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100);
+            doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 27);
+            doc.text(`Modo: ${isAuto ? 'Autodescarga Dominical' : 'Descarga Manual'}`, 20, 32);
+
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(43, 100, 133);
+            doc.line(20, 36, 190, 36);
+
+            doc.setFillColor(240, 244, 248);
+            doc.rect(20, 42, 80, 25, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(43, 100, 133);
+            doc.text("TOTAL INVERTIDO", 25, 48);
+            doc.setFontSize(16);
+            doc.text(`S/. ${total.toFixed(2)}`, 25, 60);
+
+            doc.setFillColor(240, 244, 248);
+            doc.rect(110, 42, 80, 25, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text("REABASTECIMIENTOS", 115, 48);
+            doc.setFontSize(16);
+            doc.text(`${totalOrdenes} órdenes`, 115, 60);
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(50);
+            doc.text("Detalle de Órdenes a Proveedores", 20, 80);
+
+            doc.setFontSize(10);
+            doc.text("Fecha", 20, 88);
+            doc.text("Proveedor", 50, 88);
+            doc.text("Detalle de Lotes Recibidos (Vencimiento)", 90, 88);
+            doc.text("Costo Total", 170, 88);
+
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(20, 91, 190, 91);
+
+            doc.setFont("helvetica", "normal");
+            let y = 97;
+            ordenes.forEach(orden => {
+                const provNombre = orden.proveedor ? orden.proveedor.nombre_display : 'N/A';
+                const itemsText = orden.items.map(i =>
+                    `${i.cantidad_recibida}x ${i.producto ? i.producto.nombre + (i.producto.presentacion ? ' ' + i.producto.presentacion : '') : 'Producto'} (Vence: ${i.fecha_vencimiento_lote || 'N/A'})`
+                ).join(", ");
+                const splitItems = doc.splitTextToSize(itemsText, 75);
+
+                if (y + splitItems.length * 5 > 280) { doc.addPage(); y = 20; }
+
+                doc.text(orden.fecha_recepcion, 20, y);
+                doc.text(provNombre, 50, y);
+                splitItems.forEach((line, i) => doc.text(line, 90, y + (i * 5)));
+                doc.text(`S/. ${parseFloat(orden.costo_total).toFixed(2)}`, 170, y);
+                y += Math.max(8, splitItems.length * 5) + 3;
+            });
+
+            doc.save(`reporte_proveedores_${isAuto ? 'auto_' : ''}${Date.now()}.pdf`);
+        } catch (err) {
+            console.error('Error generando PDF de proveedores:', err);
+            alert('Error al generar el reporte de proveedores');
+        }
     }
 
     // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En tiempo real y domingos) ===
@@ -1342,71 +1320,50 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // === RESUMEN GENERAL DE REPORTES (Ventas activas y Compras activas) ===
-    window.updateReportsSummary = function() {
-        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
-        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
-        
-        // Sumar sólo lo que no se ha archivado el domingo
-        const activeSalesTotal = sales.filter(s => !s.archived).reduce((sum, s) => sum + s.total, 0);
-        const activeOrdersTotal = orders.filter(o => !o.archived).reduce((sum, o) => sum + o.total, 0);
-        
-        const salesTotalElement = document.getElementById('reports-sales-total');
-        const ordersTotalElement = document.getElementById('reports-providers-total');
-        
-        if (salesTotalElement) salesTotalElement.innerText = `S/. ${activeSalesTotal.toFixed(2)}`;
-        if (ordersTotalElement) ordersTotalElement.innerText = `S/. ${activeOrdersTotal.toFixed(2)}`;
+    window.updateReportsSummary = async function() {
+        try {
+            const res = await apiFetch('/api/reportes/resumen');
+            const reportes = await res.json();
+
+            const salesTotalEl = document.getElementById('reports-sales-total');
+            const ordersTotalEl = document.getElementById('reports-providers-total');
+
+            if (salesTotalEl) salesTotalEl.innerText = `S/. ${reportes.totalVentas.toFixed(2)}`;
+            if (ordersTotalEl) ordersTotalEl.innerText = `S/. ${reportes.totalGastos.toFixed(2)}`;
+        } catch (err) {
+            console.error('Error cargando reportes:', err);
+        }
     };
 
     // === RENDERIZADO DINÁMICO DE LA LISTA DE PROVEEDORES EN REPORTES ===
-    window.renderProvidersListInReports = function() {
+    window.renderProvidersListInReports = async function() {
         const tbody = document.getElementById('reports-providers-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
-        const products = getProducts();
-        
-        // Agrupar gastos por proveedor único
-        const providersMap = {};
-        orders.forEach(order => {
-            const name = order.providerName ? order.providerName.trim() : 'N/A';
-            if (!providersMap[name]) {
-                providersMap[name] = {
-                    name: name,
-                    categories: new Set(),
-                    totalGasto: 0
-                };
+
+        try {
+            const res = await apiFetch('/api/reportes/proveedores-mes');
+            const proveedores = await res.json();
+            tbody.innerHTML = '';
+
+            if (proveedores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 px-6 text-center text-slate-400 text-sm">No hay proveedores registrados este mes.</td></tr>`;
+                return;
             }
-            providersMap[name].totalGasto += order.total;
-            
-            // Buscar categorías de los productos involucrados
-            order.items.forEach(item => {
-                const matchedProduct = products.find(p => p.name.toLowerCase() === item.name.toLowerCase());
-                if (matchedProduct && matchedProduct.category) {
-                    providersMap[name].categories.add(matchedProduct.category);
-                } else {
-                    providersMap[name].categories.add('Abarrotes');
-                }
+
+            proveedores.forEach(prov => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-50 hover:bg-surface-container-low transition-colors';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-semibold">${prov.proveedor}</td>
+                    <td class="py-4 px-6 text-sm">General</td>
+                    <td class="py-4 px-6 text-right font-headline font-bold">S/. ${prov.gasto_mensual.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
             });
-        });
-        
-        const providersList = Object.values(providersMap);
-        if (providersList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="py-4 px-6 text-center text-slate-400 text-sm">No hay proveedores registrados aún.</td></tr>`;
-            return;
+        } catch (err) {
+            console.error('Error cargando proveedores en reportes:', err);
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-error">Error al cargar proveedores</td></tr>`;
         }
-        
-        providersList.forEach(prov => {
-            const catsStr = Array.from(prov.categories).join(', ') || 'General';
-            const tr = document.createElement('tr');
-            tr.className = 'border-b border-slate-50 hover:bg-surface-container-low transition-colors';
-            tr.innerHTML = `
-                <td class="py-4 px-6 font-semibold">${prov.name}</td>
-                <td class="py-4 px-6 text-sm">${catsStr}</td>
-                <td class="py-4 px-6 text-right font-headline font-bold">S/. ${prov.totalGasto.toFixed(2)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
     };
 
     // === ARCHIVADO DE REPORTES SEMANALES ===
