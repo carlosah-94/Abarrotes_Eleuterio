@@ -80,37 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return (result.trim() + ' CON ' + decimalStr).toUpperCase();
     }
 
-    // Inicializar los datos de LocalStorage
-    function initData() {
-        if (!localStorage.getItem('products')) {
-            const initialProducts = [
-                { id: 1, name: 'Aceite Vegetal 1L', category: 'Abarrotes', stock: 42, price: 11.50, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSdyoT-pWaPag0pRUqTVjyMlYIdXIzPzzhoXsfG2JLfKPlbQ08vd3Ou77DoCalL0vk8OEJS47qpO3AVgwTBVz3qHSzH1gqMQD0RHPpIWQEhwxOaq-yP5hHIbqpbKl09Pj23-DIQ3XPEUJs4MNQ-lhwgjkRohCp-_663xiJqtxhE-G65whtGywBbaypraQKPfHneDzN-eN1D65yK07NqW_wWFf1s41UbTvIPH5vXg8cKnpY2BXxtf1aWVWi4hcyFu2nfzNX-Ds2on_U', batches: [{ qty: 42, dueDate: '2026-12-31' }], salesCount: 0 },
-                { id: 2, name: 'Arroz Extra 5kg', category: 'Abarrotes', stock: 5, price: 24.90, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3pLoVfn_cHSGBAgLCawkMy9JF3RpoavMJXPq5bE8ekikGRPBw-hgvId76H2HYoI97_xtHbBWdaKnWdERXhZMLy4TLo9zDUAa0h27fZ6bQeHXR6AToMIccogByWEoB_I8g2jMY76vP4BnJRelFRDzTSG3WJ53wtI_D2WPkXeFgZr5gkn_AlS0VL3KzfPQtYT2k88Ci1rIKhwbaisYKy6GgOucKRUR-g3x3kHHc4RlXcG3G43038Fqgx0gquIa8-79CT5mhviWSnqLh', batches: [{ qty: 5, dueDate: '2026-06-30' }], salesCount: 0 },
-                { id: 3, name: 'Leche Evaporada', category: 'Lácteos', stock: 120, price: 4.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgVkKE_tfawwqwEkLX-lyRmdSXUCTFajYQOShvl7TNY262UdpLieZNgN9sXz1dUYIKGVhRhj5EEMJ8UYvUh8arGs1ct8MkPl0dGY1ZqXvEpOOkOeq5FwLRDdswjmBFO302bIyTw9v7DditPXHjYE20AROaQ7J2lKF7CIIAcnzzZoGbCMcFc6Wd7lsJH58R2cHWieLPptQaijka01eZRuIvn6XljFNwF4Ugts08BdrOxZZvd-Rk28hQ3SEp27WW_oI4-X8CeZk46s54', batches: [{ qty: 120, dueDate: '2026-08-15' }], salesCount: 0 },
-                { id: 4, name: 'Pan Molde', category: 'Abarrotes', stock: 15, price: 7.20, img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCujcMaJvzpK3auTF3xe0sscuwFryBw5EvP0seUXe1Ju_OBxqbafAZqGARER-FNnJw_qpTt5mYP-kLBmGcJnP2ANYoKUB_rlJlxBrMd0rxnzPHBWx5cVplYG6QC1Zrz-_QfAz5jlvtYniSoU9ri1lqA5t6kq5u7LHyfaQOvKl1p7phDKer-X28gjU5u202eCJitPLhmnXYJuVIdUF5rfdvS2sP8vZtJQn5opeM1pGKGENUqTIWKnb09A2BJxeJAQO5sNgb6wwxvcJTL', batches: [{ qty: 15, dueDate: '2026-06-10' }], salesCount: 0 },
-                { id: 5, name: 'Huevos x12', category: 'Lácteos', stock: 30, price: 8.50, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 30, dueDate: '2026-06-25' }], salesCount: 0 },
-                { id: 6, name: 'Atún Campomar', category: 'Abarrotes', stock: 50, price: 5.20, img: DEFAULT_PRODUCT_IMAGE, batches: [{ qty: 50, dueDate: '2027-01-20' }], salesCount: 0 }
-            ];
-            localStorage.setItem('products', JSON.stringify(initialProducts));
-        }
-        if (!localStorage.getItem('cart')) {
-            localStorage.setItem('cart', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('salesHistory')) {
-            localStorage.setItem('salesHistory', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('providerOrdersHistory')) {
-            localStorage.setItem('providerOrdersHistory', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('dismissedNotifications')) {
-            localStorage.setItem('dismissedNotifications', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('lastResetSunday')) {
-            localStorage.setItem('lastResetSunday', '');
-        }
+    // Inicializar carrito en localStorage
+    if (!localStorage.getItem('cart')) {
+        localStorage.setItem('cart', JSON.stringify([]));
     }
-    
-    initData();
+    if (!localStorage.getItem('dismissedNotifications')) {
+        localStorage.setItem('dismissedNotifications', JSON.stringify([]));
+    }
 
     // ============================================================
     // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS (API FETCH)
@@ -124,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const response = await fetch(url, { ...options, headers });
 
-        // Si el token expiró, redirigir al login
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             navigateTo('login');
@@ -133,38 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return response;
     }
-    // Hacer apiFetch accesible globalmente
     window.apiFetch = apiFetch;
-
-    // Acceso a datos con normalización automática de lotes y campos faltantes
-    function getProducts() {
-        const products = JSON.parse(localStorage.getItem('products')) || [];
-        let updated = false;
-        products.forEach(p => {
-            if (!p.batches) {
-                p.batches = [{ qty: p.stock, dueDate: p.dueDate || '' }];
-                updated = true;
-            }
-            if (p.salesCount === undefined) {
-                p.salesCount = 0;
-                updated = true;
-            }
-        });
-        if (updated) {
-            localStorage.setItem('products', JSON.stringify(products));
-        }
-        return products;
-    }
-
-    function saveProducts(products) {
-        localStorage.setItem('products', JSON.stringify(products));
-        renderInventory();
-        renderFrequentProducts();
-        updateProviderDatalist();
-        updateCategoryDatalist();
-        updateDashboard();
-        checkNotifications();
-    }
 
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
@@ -200,8 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (viewName === 'login') sectionLogin.classList.remove('hidden');
         if (viewName === 'register') sectionRegister.classList.remove('hidden');
         if (viewName === 'main') {
+            if (!localStorage.getItem('authToken')) {
+                sectionLogin.classList.remove('hidden');
+                return;
+            }
             sectionMainApp.classList.remove('hidden');
-            switchAppView('dashboard'); // Por defecto al tablero
+            switchAppView('dashboard');
         }
     };
 
@@ -314,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Autocompletado de categorías
     window.updateCategoryDatalist = async function() {
         const datalist = document.getElementById('categories-list');
         if (!datalist) return;
@@ -337,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tableBody) return;
 
         try {
-            // Cargar estadísticas
             const statsRes = await apiFetch('/api/productos/stats');
             const stats = await statsRes.json();
 
@@ -351,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardCritical) cardCritical.innerText = stats.stockCritico;
             if (cardCats) cardCats.innerText = stats.totalCategorias;
 
-            // Cargar productos con filtros
             const params = new URLSearchParams();
             if (currentSearchTerm) params.set('busqueda', currentSearchTerm);
             params.set('pagina', currentPage);
@@ -399,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tableBody.appendChild(tr);
             });
 
-            // Paginación
             const txtInfo = document.getElementById('pagination-info');
             const btnPrev = document.getElementById('btn-prev-page');
             const btnNext = document.getElementById('btn-next-page');
@@ -416,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Eliminar producto
     window.deleteProduct = async function(id) {
         if (confirm('¿Seguro que deseas eliminar este producto?')) {
             try {
@@ -478,7 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Agregar Producto Nuevo
     document.getElementById('form-add-product').addEventListener('submit', async (e) => {
         e.preventDefault();
         const catInput = document.getElementById('add-product-category');
@@ -518,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === LÓGICA DE VENTAS ===
     window.renderFrequentProducts = async function() {
         const grid = document.getElementById('frequent-products-grid');
         if (!grid) return;
@@ -532,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await apiFetch(url);
             let productos;
             const data = await res.json();
-            productos = data.data ? data.data : data; // Manejar ambos formatos
+            productos = data.data ? data.data : data;
 
             grid.innerHTML = '';
             if (!productos || productos.length === 0) {
@@ -557,7 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const typeTag = p.tipo ? `<div class="mb-2 flex justify-end min-h-[20px]"><span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded-md text-[10px] font-bold leading-none">${p.tipo}</span></div>` : '<div class="mb-2 min-h-[20px]"></div>';
 
-                // Imagen: intentar cargar la imagen del producto, si falla usar default
                 const imgSrc = p.imagen_url || DEFAULT_PRODUCT_IMAGE;
 
                 const div = document.createElement('div');
@@ -606,12 +546,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateCartQty = function(id, delta) {
         let cart = getCart();
         const item = cart.find(c => c.id === id);
-        const products = getProducts();
-        const product = products.find(p => p.id === id);
-        
+
         if(item) {
             const newQty = item.qty + delta;
-            if(newQty > 0 && newQty <= product.stock) {
+            const maxStock = item.stock || 999;
+            if(newQty > 0 && newQty <= maxStock) {
                  item.qty = newQty;
             } else if (newQty <= 0) {
                  cart = cart.filter(c => c.id !== id);
@@ -656,7 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cartTotalSpan.innerText = `S/. ${total.toFixed(2)}`;
     };
 
-    // Finalizar Venta (Lógica FEFO - First Expired, First Out)
     document.getElementById('form-sale').addEventListener('submit', async (e) => {
         e.preventDefault();
         const cart = getCart();
@@ -891,10 +829,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Validar que el producto ya exista en el catálogo de inventario
-        const products = getProducts();
-        const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
-        if (!exists) {
+        const datalist = document.getElementById('proveedores-products');
+        const validNames = datalist ? Array.from(datalist.options).map(o => o.value.toLowerCase()) : [];
+        if (validNames.length > 0 && !validNames.includes(name.toLowerCase())) {
             alert(`El producto "${name}" no existe en el inventario. Debe crearlo primero en la pestaña de Inventario.`);
             return;
         }
@@ -981,7 +918,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await apiFetch('/api/reportes/ventas-semana');
             const { ventas, total, transacciones } = await res.json();
 
-            // Título
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
             doc.setTextColor(0, 83, 91);
@@ -997,7 +933,6 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.setDrawColor(0, 83, 91);
             doc.line(20, 36, 190, 36);
 
-            // Tarjetas
             doc.setFillColor(240, 244, 248);
             doc.rect(20, 42, 80, 25, "F");
             doc.setFont("helvetica", "bold");
@@ -1016,7 +951,6 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.setFontSize(16);
             doc.text(`${transacciones} ventas`, 115, 60);
 
-            // Tabla
             doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(50);
@@ -1135,125 +1069,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === SISTEMA DE NOTIFICACIONES DINÁMICAS (En tiempo real y domingos) ===
-    window.checkNotifications = function() {
-        const products = getProducts();
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        
-        const currentPossible = [];
+    window.checkNotifications = async function() {
+        try {
+            const res = await apiFetch('/api/productos/alertas');
+            const alertas = await res.json();
 
-        // 1. Alertas de Stock y Vencimiento
-        products.forEach(p => {
-            // Agotado
-            if (p.stock === 0) {
-                currentPossible.push({
-                    id: `no-stock-${p.id}`,
-                    title: "Agotado",
-                    message: `El producto "${p.name}" se encuentra sin stock.`,
-                    type: "error"
-                });
-            } 
-            // Bajo stock
-            else if (p.stock <= 10) {
-                currentPossible.push({
-                    id: `low-stock-${p.id}-${p.stock}`,
-                    title: "Bajo Stock",
-                    message: `El producto "${p.name}" tiene stock bajo (${p.stock} pzas).`,
-                    type: "warning"
-                });
+            const dismissed = JSON.parse(localStorage.getItem('dismissedNotifications')) || [];
+            const activeNotifications = alertas.filter(a => !dismissed.includes(`${a.tipo}-${a.productoId}`));
+
+            const badge = document.getElementById('notification-badge');
+            const modalCount = document.getElementById('notification-modal-count');
+            if (badge) {
+                badge.innerText = activeNotifications.length;
+                badge.classList.toggle('hidden', activeNotifications.length === 0);
             }
+            if (modalCount) modalCount.innerText = activeNotifications.length;
 
-            // Fechas de vencimiento
-            if (p.dueDate) {
-                const due = new Date(p.dueDate);
-                due.setHours(0,0,0,0);
-                const diffTime = due - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays <= 0) {
-                    currentPossible.push({
-                        id: `expired-${p.id}-${p.dueDate}`,
-                        title: "Vencido",
-                        message: `El producto "${p.name}" ya venció (Venció el ${p.dueDate}).`,
-                        type: "error"
-                    });
-                } else if (diffDays <= 30) {
-                    currentPossible.push({
-                        id: `expiring-${p.id}-${p.dueDate}`,
-                        title: "Próximo a Vencer",
-                        message: `El producto "${p.name}" está próximo a vencer (Vence el ${p.dueDate}).`,
-                        type: "warning"
-                    });
+            const list = document.getElementById('notifications-list');
+            if (list) {
+                list.innerHTML = '';
+                if (activeNotifications.length === 0) {
+                    list.innerHTML = `<div class="p-6 text-center text-slate-400 text-sm">No hay notificaciones.</div>`;
+                    return;
                 }
-            }
-        });
 
-        // 2. Alerta de Domingo para Reportes
-        if (today.getDay() === 0) { // Domingo
-            const sundayStr = today.toISOString().split('T')[0];
-            currentPossible.push({
-                id: `sunday-report-${sundayStr}`,
-                title: "Reporte Semanal Listo",
-                message: "¡Hoy es Domingo! Ya puedes descargar los reportes de la semana en formato PDF.",
-                type: "warning"
-            });
-        }
+                activeNotifications.forEach(n => {
+                    const item = document.createElement('div');
+                    item.className = 'px-6 py-4 hover:bg-surface-container-low flex gap-4 items-center justify-between';
+                    const iconColor = n.tipo === 'error' ? 'bg-error text-white' : 'bg-orange-500 text-white';
+                    const iconName = n.tipo === 'error' ? 'cancel' : 'warning';
+                    const notifId = `${n.tipo}-${n.productoId}`;
 
-        // Cargar dismissals y filtrar los que ya no aplican para no inflar localStorage
-        let dismissed = JSON.parse(localStorage.getItem('dismissedNotifications')) || [];
-        dismissed = dismissed.filter(id => currentPossible.some(n => n.id === id));
-        localStorage.setItem('dismissedNotifications', JSON.stringify(dismissed));
-
-        // Filtrar notificaciones activas
-        const activeNotifications = currentPossible.filter(n => !dismissed.includes(n.id));
-
-        // Actualizar badges
-        const badge = document.getElementById('notification-badge');
-        const modalCount = document.getElementById('notification-modal-count');
-        if (badge) {
-            badge.innerText = activeNotifications.length;
-            if (activeNotifications.length > 0) {
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-        if (modalCount) {
-            modalCount.innerText = activeNotifications.length;
-        }
-
-        // Renderizar lista en el modal
-        const list = document.getElementById('notifications-list');
-        if (list) {
-            list.innerHTML = '';
-            if (activeNotifications.length === 0) {
-                list.innerHTML = `<div class="p-6 text-center text-slate-400 text-sm">No hay notificaciones.</div>`;
-                return;
-            }
-
-            activeNotifications.forEach(n => {
-                const item = document.createElement('div');
-                item.className = 'px-6 py-4 hover:bg-surface-container-low flex gap-4 items-center justify-between';
-                const iconColor = n.type === 'error' ? 'bg-error text-white' : 'bg-orange-500 text-white';
-                const iconName = n.type === 'error' ? 'cancel' : 'warning';
-                
-                item.innerHTML = `
-                    <div class="flex gap-4 items-center">
-                        <div class="w-8 h-8 rounded-full ${iconColor} flex items-center justify-center shrink-0">
-                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">${iconName}</span>
+                    item.innerHTML = `
+                        <div class="flex gap-4 items-center">
+                            <div class="w-8 h-8 rounded-full ${iconColor} flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">${iconName}</span>
+                            </div>
+                            <div>
+                                <span class="font-body font-semibold text-sm block leading-tight text-on-surface">${n.titulo}</span>
+                                <span class="text-xs text-on-surface-variant">${n.mensaje}</span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="font-body font-semibold text-sm block leading-tight text-on-surface">${n.title}</span>
-                            <span class="text-xs text-on-surface-variant">${n.message}</span>
-                        </div>
-                    </div>
-                    <button onclick="dismissNotification('${n.id}')" class="text-slate-400 hover:text-slate-600 p-1 transition-colors shrink-0">
-                        <span class="material-symbols-outlined text-[18px]">close</span>
-                    </button>
-                `;
-                list.appendChild(item);
-            });
+                        <button onclick="dismissNotification('${notifId}')" class="text-slate-400 hover:text-slate-600 p-1 transition-colors shrink-0">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </button>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        } catch (err) {
+            console.error('Error cargando notificaciones:', err);
         }
     };
 
@@ -1266,60 +1131,36 @@ document.addEventListener('DOMContentLoaded', () => {
         checkNotifications();
     };
 
-    window.clearAllNotifications = function() {
-        const products = getProducts();
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        
-        const possibleIds = [];
-        
-        products.forEach(p => {
-            if (p.stock === 0) possibleIds.push(`no-stock-${p.id}`);
-            else if (p.stock <= 10) possibleIds.push(`low-stock-${p.id}-${p.stock}`);
-            
-            if (p.dueDate) {
-                const due = new Date(p.dueDate);
-                due.setHours(0,0,0,0);
-                const diffTime = due - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays <= 0) possibleIds.push(`expired-${p.id}-${p.dueDate}`);
-                else if (diffDays <= 30) possibleIds.push(`expiring-${p.id}-${p.dueDate}`);
-            }
-        });
-
-        if (today.getDay() === 0) {
-            const sundayStr = today.toISOString().split('T')[0];
-            possibleIds.push(`sunday-report-${sundayStr}`);
+    window.clearAllNotifications = async function() {
+        try {
+            const res = await apiFetch('/api/productos/alertas');
+            const alertas = await res.json();
+            const possibleIds = alertas.map(a => `${a.tipo}-${a.productoId}`);
+            localStorage.setItem('dismissedNotifications', JSON.stringify(possibleIds));
+            checkNotifications();
+        } catch (err) {
+            console.error('Error limpiando notificaciones:', err);
         }
-
-        localStorage.setItem('dismissedNotifications', JSON.stringify(possibleIds));
-        checkNotifications();
     };
 
-    // === PANEL DE CONTROL / DASHBOARD FUNCIONAL ===
-    window.updateDashboard = function() {
-        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
-        const products = getProducts();
-        
-        const startOfToday = new Date();
-        startOfToday.setHours(0,0,0,0);
-        
-        // Ventas del día actual (se resetea automáticamente al iniciar el nuevo día)
-        const salesToday = sales
-            .filter(s => new Date(s.date) >= startOfToday)
-            .reduce((sum, s) => sum + s.total, 0);
-            
-        // Productos con bajo stock
-        const lowStockCount = products.filter(p => p.stock <= 10).length;
-        
-        const salesValElement = document.getElementById('dashboard-sales-today');
-        const lowStockElement = document.getElementById('dashboard-low-stock-count');
-        
-        if (salesValElement) salesValElement.innerText = salesToday.toFixed(2);
-        if (lowStockElement) lowStockElement.innerText = lowStockCount;
+    window.updateDashboard = async function() {
+        try {
+            const ventasRes = await apiFetch('/api/ventas/hoy');
+            const ventasData = await ventasRes.json();
+
+            const statsRes = await apiFetch('/api/productos/stats');
+            const statsData = await statsRes.json();
+
+            const salesValElement = document.getElementById('dashboard-sales-today');
+            const lowStockElement = document.getElementById('dashboard-low-stock-count');
+
+            if (salesValElement) salesValElement.innerText = ventasData.total.toFixed(2);
+            if (lowStockElement) lowStockElement.innerText = statsData.stockCritico;
+        } catch (err) {
+            console.error('Error actualizando dashboard:', err);
+        }
     };
 
-    // === RESUMEN GENERAL DE REPORTES (Ventas activas y Compras activas) ===
     window.updateReportsSummary = async function() {
         try {
             const res = await apiFetch('/api/reportes/resumen');
@@ -1335,7 +1176,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // === RENDERIZADO DINÁMICO DE LA LISTA DE PROVEEDORES EN REPORTES ===
     window.renderProvidersListInReports = async function() {
         const tbody = document.getElementById('reports-providers-table-body');
         if (!tbody) return;
@@ -1366,46 +1206,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // === ARCHIVADO DE REPORTES SEMANALES ===
-    window.archiveWeeklyData = function() {
-        const sales = JSON.parse(localStorage.getItem('salesHistory')) || [];
-        const orders = JSON.parse(localStorage.getItem('providerOrdersHistory')) || [];
-        
-        sales.forEach(s => s.archived = true);
-        orders.forEach(o => o.archived = true);
-        
-        localStorage.setItem('salesHistory', JSON.stringify(sales));
-        localStorage.setItem('providerOrdersHistory', JSON.stringify(orders));
-    };
-
-    // === CHEQUEO DE RESET DOMINICAL AUTOMÁTICO ===
-    window.checkSundayResetAndDownload = function() {
-        const today = new Date();
-        const day = today.getDay(); // 0 es Domingo
-        
-        if (day === 0) {
-            const todaySundayStr = today.toISOString().split('T')[0];
-            const lastResetSunday = localStorage.getItem('lastResetSunday');
-            
-            // Si es domingo y hoy no se ha realizado el reset automático
-            if (lastResetSunday !== todaySundayStr) {
-                // Descargar PDFs automáticos de la semana acumulada
-                generateSalesWeeklyReportPDF(true);
-                generateProvidersExpensesReportPDF(true);
-                
-                // Archivar la semana (pone los contadores acumulativos activos a 0)
-                archiveWeeklyData();
-                
-                localStorage.setItem('lastResetSunday', todaySundayStr);
-                alert('¡Atención! Hoy es Domingo. Se han descargado y archivado tus reportes de la semana.');
-                
-                // Refrescar UI
-                updateReportsSummary();
-                renderProvidersListInReports();
-            }
-        }
-    };
-
     // ============================================================
     // LOGIN REAL CON JWT
     // ============================================================
@@ -1417,7 +1217,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('login-password').value;
             const btn = loginForm.querySelector('button[type="submit"]');
 
-            // Limpiar error previo
             const prevError = document.getElementById('login-error-msg');
             if (prevError) prevError.remove();
 
@@ -1436,6 +1235,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && data.token) {
                     localStorage.setItem('authToken', data.token);
                     navigateTo('main');
+                    updateCategoryDatalist();
+                    renderInventory();
+                    renderFrequentProducts();
+                    renderCart();
+                    updateDashboard();
+                    checkNotifications();
+                    updateReportsSummary();
+                    renderProvidersListInReports();
                 } else {
                     showLoginError(data.error || 'Credenciales incorrectas');
                 }
@@ -1454,8 +1261,8 @@ document.addEventListener('DOMContentLoaded', () => {
             errDiv = document.createElement('p');
             errDiv.id = 'login-error-msg';
             errDiv.style.cssText = 'color: #ba1a1a; font-size: 0.875rem; font-weight: 600; text-align: center; margin-top: 0.5rem;';
-            const loginForm = document.querySelector('#view-login form');
-            if (loginForm) loginForm.appendChild(errDiv);
+            const form = document.querySelector('#view-login form');
+            if (form) form.appendChild(errDiv);
         }
         errDiv.innerText = msg;
     }
@@ -1472,20 +1279,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Inicializar renders e interfaces al cargar
-    updateCategoryDatalist();
-    renderInventory();
-    renderFrequentProducts();
-    renderCart();
-    updateDashboard();
-    checkNotifications();
-    updateReportsSummary();
-    renderProvidersListInReports();
-    checkSundayResetAndDownload();
-
-    // Loop de verificación cada 30 segundos (Para mantener reloj local en tab activa)
-    setInterval(() => {
+    // Inicializar según sesión
+    if (localStorage.getItem('authToken')) {
+        navigateTo('main');
+        updateCategoryDatalist();
+        renderInventory();
+        renderFrequentProducts();
+        renderCart();
         updateDashboard();
-        checkSundayResetAndDownload();
-    }, 30000);
+        checkNotifications();
+        updateReportsSummary();
+        renderProvidersListInReports();
+    } else {
+        navigateTo('login');
+    }
+
+    // Loop de verificación cada 60 segundos
+    setInterval(() => {
+        if (localStorage.getItem('authToken')) {
+            updateDashboard();
+            checkNotifications();
+        }
+    }, 60000);
 });

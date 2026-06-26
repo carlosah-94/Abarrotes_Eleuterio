@@ -19,14 +19,12 @@ const ventasRouter = require('./src/routes/ventas');
 const proveedoresRouter = require('./src/routes/proveedores');
 const reportesRouter = require('./src/routes/reportes');
 
-// Middleware de autenticación para rutas protegidas
-const authMiddleware = require('./src/middleware/auth');
-
 app.use('/api/auth', authRouter);
 app.use('/api/productos', productosRouter);
 app.use('/api/categorias', categoriasRouter);
 app.use('/api/ventas', ventasRouter);
 app.use('/api/ordenes', proveedoresRouter);
+app.use('/api/proveedores', proveedoresRouter);
 app.use('/api/reportes', reportesRouter);
 
 // Ruta principal — sirve el frontend
