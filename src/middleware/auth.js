@@ -1,4 +1,3 @@
-// src/middleware/auth.js
 // Middleware que verifica el token JWT en cada petición protegida
 const jwt = require('jsonwebtoken');
 

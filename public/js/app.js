@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'proveedores': document.getElementById('app-proveedores')
     };
 
-    // Imagen por defecto en formato SVG Data URL (Elegante, autocompletada y sin comillas dobles internas para evitar conflictos en HTML)
+    // Imagen por defecto en formato SVG Data URL
     const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='100%' height='100%'><rect width='100%' height='100%' fill='%23f1f5f9'/><g fill='none' stroke='%2394a3b8' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M60 80h80v70a10 10 0 0 1-10 10H70a10 10 0 0 1-10-10V80z'/><path d='M85 80V60a15 15 0 0 1 30 0v20'/></g><text x='100' y='170' font-family='system-ui, sans-serif' font-size='13' font-weight='600' fill='%2364748b' text-anchor='middle'>Sin Imagen</text></svg>";
 
     // Función auxiliar para obtener la imagen correcta de un producto
@@ -25,13 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return p.img;
     }
 
-    // Función auxiliar para normalizar texto (quitar tildes y convertir a minúsculas)
+    // Función auxiliar para normalizar texto
     function normalizeText(text) {
         if (!text) return '';
         return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     }
 
-    // Convertidor de números a letras en español (Soles peruanos)
+    // Convertidor de números a letras en español
     function numberToLetters(num) {
         const units = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
         const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
@@ -88,9 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('dismissedNotifications', JSON.stringify([]));
     }
 
-    // ============================================================
-    // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS (API FETCH)
-    // ============================================================
+    // FUNCIÓN HELPER PARA PETICIONES AUTENTICADAS
     async function apiFetch(url, options = {}) {
         const token = localStorage.getItem('authToken');
         const headers = {
@@ -110,10 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.apiFetch = apiFetch;
 
+    // Función para obtener carrito desde localStorage
     function getCart() {
         return JSON.parse(localStorage.getItem('cart')) || [];
     }
 
+    // Función para guardar carrito y actualizar vista
     function saveCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
         renderCart();
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Funciones de navegación de la app
+    // Funciones de navegación de la app (switchAppView)
     window.switchAppView = function(viewName) {
         // Ocultar todas las vistas principales
         Object.values(appViews).forEach(view => {
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Control de Modales
+    // Control de Modales (abrir/cerrar)
     window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.remove('hidden');
@@ -247,11 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === INVENTARIO Y PAGINACION ===
+    // INVENTARIO Y PAGINACION - variables de estado
     let currentPage = 1;
     const itemsPerPage = 5;
     let currentSearchTerm = '';
 
+    // Event listener para búsqueda en inventario
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -262,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Función para actualizar datalist de categorías
     window.updateCategoryDatalist = async function() {
         const datalist = document.getElementById('categories-list');
         if (!datalist) return;
@@ -279,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para renderizar inventario con paginación
     window.renderInventory = async function() {
         const tableBody = document.querySelector('#inventory-table tbody');
         if (!tableBody) return;
@@ -360,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para eliminar producto
     window.deleteProduct = async function(id) {
         if (confirm('¿Seguro que deseas eliminar este producto?')) {
             try {
@@ -371,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Variables y función para editar producto
     let editingId = null;
     window.editProduct = async function(id) {
         try {
@@ -395,6 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Event listener para formulario de edición de producto
     document.getElementById('form-edit-product').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -421,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Event listener para formulario de agregar producto
     document.getElementById('form-add-product').addEventListener('submit', async (e) => {
         e.preventDefault();
         const catInput = document.getElementById('add-product-category');
@@ -460,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Función para renderizar productos frecuentes en ventas
     window.renderFrequentProducts = async function() {
         const grid = document.getElementById('frequent-products-grid');
         if (!grid) return;
@@ -521,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para agregar producto al carrito
     window.addToCart = function(id, nombre, precio, stockDisponible, presentacion) {
         const cart = getCart();
         const existing = cart.find(c => c.id === id);
@@ -543,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveCart(cart);
     };
 
+    // Función para actualizar cantidad en carrito
     window.updateCartQty = function(id, delta) {
         let cart = getCart();
         const item = cart.find(c => c.id === id);
@@ -559,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveCart(cart);
     };
 
+    // Función para renderizar carrito en vista de ventas
     window.renderCart = function() {
         const cartContainer = document.getElementById('cart-items');
         const cartTotalSpan = document.getElementById('cart-total');
@@ -595,6 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cartTotalSpan.innerText = `S/. ${total.toFixed(2)}`;
     };
 
+    // Event listener para formulario de venta
     document.getElementById('form-sale').addEventListener('submit', async (e) => {
         e.preventDefault();
         const cart = getCart();
@@ -648,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Descargar Comprobante PDF (Boleta Térmica de 80mm mejorada según imagen)
+    // Event listener para descargar comprobante PDF
     const btnReceipt = document.getElementById('btn-download-receipt');
     if (btnReceipt) {
         btnReceipt.addEventListener('click', () => {
@@ -661,6 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Función para generar comprobante PDF (boleta térmica)
     function generateReceiptPDF(sale) {
         const { jsPDF } = window.jspdf;
         const itemsCount = sale.items.length;
@@ -767,9 +780,10 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.save(`boleta_${sale.id}.pdf`);
     }
  
-    // === LÓGICA DE PROVEEDORES ===
+    // LÓGICA DE PROVEEDORES - variables de estado
     let currentProviderOrder = [];
 
+    // Función para actualizar datalist de productos en proveedores
     window.updateProviderDatalist = async function() {
         const datalist = document.getElementById('proveedores-products');
         if (!datalist) return;
@@ -787,6 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para renderizar orden de proveedor
     window.renderProviderOrder = function() {
         const container = document.getElementById('provider-added-products');
         const costSpan = document.getElementById('provider-total-cost');
@@ -813,6 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         costSpan.innerText = `S/. ${total.toFixed(2)}`;
     };
 
+    // Función para agregar producto a orden de proveedor
     window.addProviderProduct = function() {
         const inputName = document.getElementById('provider-product');
         const inputQty = document.getElementById('provider-qty');
@@ -846,11 +862,13 @@ document.addEventListener('DOMContentLoaded', () => {
         inputCost.value = '';
     };
 
+    // Función para eliminar producto de orden de proveedor
     window.removeProviderProduct = function(index) {
         currentProviderOrder.splice(index, 1);
         renderProviderOrder();
     };
 
+    // Event listener para formulario de proveedores
     document.getElementById('form-proveedores').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (currentProviderOrder.length === 0) {
@@ -895,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === REPORTES PDF ===
+    // === REPORTES PDF === - event listeners para botones
     const btnSalesPdf = document.getElementById('btn-report-sales-pdf');
     if (btnSalesPdf) {
         btnSalesPdf.addEventListener('click', () => {
@@ -910,6 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Función para generar reporte PDF de ventas semanales
     async function generateSalesWeeklyReportPDF(isAuto = false) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -989,6 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función para generar reporte PDF de gastos con proveedores
     async function generateProvidersExpensesReportPDF(isAuto = false) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -1069,6 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función para verificar notificaciones activas
     window.checkNotifications = async function() {
         try {
             const res = await apiFetch('/api/productos/alertas');
@@ -1122,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para descartar notificación individual
     window.dismissNotification = function(id) {
         const dismissed = JSON.parse(localStorage.getItem('dismissedNotifications')) || [];
         if (!dismissed.includes(id)) {
@@ -1131,6 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkNotifications();
     };
 
+    // Función para limpiar todas las notificaciones
     window.clearAllNotifications = async function() {
         try {
             const res = await apiFetch('/api/productos/alertas');
@@ -1143,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para actualizar dashboard con datos del día
     window.updateDashboard = async function() {
         try {
             const ventasRes = await apiFetch('/api/ventas/hoy');
@@ -1161,6 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para actualizar resumen en reportes
     window.updateReportsSummary = async function() {
         try {
             const res = await apiFetch('/api/reportes/resumen');
@@ -1176,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Función para renderizar lista de proveedores en reportes
     window.renderProvidersListInReports = async function() {
         const tbody = document.getElementById('reports-providers-table-body');
         if (!tbody) return;
@@ -1206,9 +1232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ============================================================
-    // LOGIN REAL CON JWT
-    // ============================================================
+    // LOGIN REAL CON JWT - event listener
     const loginForm = document.querySelector('#view-login form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -1255,6 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Función auxiliar para mostrar error en login
     function showLoginError(msg) {
         let errDiv = document.getElementById('login-error-msg');
         if (!errDiv) {
@@ -1279,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Inicializar según sesión
+    // Inicialización según sesión existente
     if (localStorage.getItem('authToken')) {
         navigateTo('main');
         updateCategoryDatalist();

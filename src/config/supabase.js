@@ -1,4 +1,3 @@
-// src/config/supabase.js
 // Cliente de Supabase para conectar con la base de datos PostgreSQL
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
