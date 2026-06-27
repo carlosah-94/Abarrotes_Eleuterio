@@ -1,4 +1,3 @@
-// src/scripts/seed.js
 // Script para insertar el usuario Don Eleuterio en la base de datos
 // Ejecutar UNA SOLA VEZ con: node src/scripts/seed.js
 const bcrypt = require('bcryptjs');

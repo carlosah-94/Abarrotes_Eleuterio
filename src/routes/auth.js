@@ -1,4 +1,3 @@
-// src/routes/auth.js
 // Rutas de autenticación: login y logout
 const express = require('express');
 const router = express.Router();

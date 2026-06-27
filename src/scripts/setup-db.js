@@ -1,4 +1,3 @@
-// src/scripts/setup-db.js
 // Ejecuta el schema SQL en Supabase. Requiere DATABASE_URL en .env
 // Formato: postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
 const fs = require('fs');
